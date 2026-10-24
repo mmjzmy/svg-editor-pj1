@@ -17,7 +17,7 @@ export class Group extends Shape {
   }
   override clone(): Group {
     const copy = this.copyInto(new Group(this.id));
-    for (const child of this.#children) copy.insert(child);
+    for (const child of this.#children) copy.insert(child.clone());
     return copy;
   }
   override summary(): string { return this.describe(''); }

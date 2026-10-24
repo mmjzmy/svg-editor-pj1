@@ -89,3 +89,16 @@ test('front is last in SVG painter order; back is first; addto appends', () => {
   assert.deepEqual(doc.root.children.map(s => s.id), ['a', 'b', 'c']);
   doc.addTo('b', 'a'); assert.equal(doc.parent(doc.find('a')).id, 'b');
 });
+
+
+test('document clone deeply isolates every descendant and its attributes', () => {
+  const original = new SvgDocument();
+  original.add(factory.create('g', 'g', []));
+  original.add(factory.create('rect', 'r', ['1', '2', '3', '4']), original.container('g'));
+  const copy = original.clone();
+  assert.notEqual(original.find('g'), copy.find('g'));
+  assert.notEqual(original.find('r'), copy.find('r'));
+  copy.find('r').move(10, 20);
+  assert.equal(original.find('r').attributes.x, '1');
+  assert.equal(copy.find('r').attributes.x, '11');
+});
