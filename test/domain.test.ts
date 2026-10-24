@@ -102,3 +102,34 @@ test('document clone deeply isolates every descendant and its attributes', () =>
   assert.equal(original.find('r').attributes.x, '1');
   assert.equal(copy.find('r').attributes.x, '11');
 });
+
+test('move and scale apply the specified geometry rules to every leaf inside nested groups', () => {
+  const doc = new SvgDocument();
+  doc.add(factory.create('g', 'scene', []));
+  doc.add(factory.create('g', 'nested', []), doc.container('scene'));
+  for (const [type, params] of [
+    ['rect', ['1', '2', '3', '4', 'red']], ['circle', ['1', '2', '3', 'red']],
+    ['ellipse', ['1', '2', '3', '4']], ['line', ['1', '2', '3', '4', 'black']],
+    ['text', ['1', '2', 'hello']],
+  ] as const) doc.add(factory.create(type, type, [...params]), doc.container('nested'));
+  doc.find('scene').move(10, 20); doc.find('scene').scale(2);
+  assert.deepEqual(doc.find('rect').attributes, { id: 'rect', x: '22', y: '44', width: '6', height: '8', fill: 'red' });
+  assert.deepEqual(doc.find('circle').attributes, { id: 'circle', cx: '22', cy: '44', r: '6', fill: 'red' });
+  assert.deepEqual(doc.find('ellipse').attributes, { id: 'ellipse', cx: '22', cy: '44', rx: '6', ry: '8' });
+  assert.deepEqual(doc.find('line').attributes, { id: 'line', x1: '22', y1: '44', x2: '26', y2: '48', stroke: 'black' });
+  assert.deepEqual(doc.find('text').attributes, { id: 'text', x: '22', y: '44' });
+  assert.equal(doc.find('text').textContent, 'hello');
+});
+
+test('geometry whitelist is type-specific and valid style/geometry changes survive cloning', () => {
+  const circle = factory.create('circle', 'c', ['1', '2', '3']);
+  circle.setAttribute('cx', '-2.5'); circle.setAttribute('r', '0');
+  circle.setAttribute('stroke', '#000'); circle.setAttribute('stroke-width', '1.5');
+  assert.throws(() => circle.setAttribute('width', '10'), /unknown attribute/);
+  assert.throws(() => circle.setAttribute('text', 'hello'), /unknown attribute/);
+  assert.deepEqual(circle.clone().attributes, { id: 'c', cx: '-2.5', cy: '2', r: '0', stroke: '#000', 'stroke-width': '1.5' });
+  const text = factory.create('text', 't', ['0', '0', 'old']);
+  text.setAttribute('x', '3.5'); text.setAttribute('text', 'new');
+  assert.equal(text.clone().textContent, 'new');
+  assert.equal(text.clone().attributes.x, '3.5');
+});
