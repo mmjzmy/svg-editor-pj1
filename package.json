@@ -1,0 +1,26 @@
+{
+  "name": "svg-editor-pj1",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PJ1 Phase 1: object-oriented SVG command-line editor",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "cli": "tsx src/main.ts",
+    "test": "tsx --test test/*.test.ts",
+    "test:coverage": "c8 --include='src/**/*.ts' --reporter=text --reporter=lcov npm test",
+    "check": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.12"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "c8": "^12.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
