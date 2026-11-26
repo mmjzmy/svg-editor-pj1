@@ -1,8 +1,8 @@
 Phase 2 metrics (generated from git history)
 Range: final..HEAD
 Base: b0b58f0
-Head: a17b47c docs(metrics): classify packaged plugins, CommandCatalog and transcripts
-Generated: 2026-11-26T14:07:15.298Z
+Head: db41866 docs(metrics): fill file responsibilities and note report head
+Generated: 2026-11-26T14:47:03.692Z
 
 == Changed files and responsibilities ==
 category  st  lines    scope     path                                        purpose
@@ -21,12 +21,12 @@ docs      A   +5/-0    counted   doc/transcript/cli-3-new.txt                pro
 docs      A   bin      excluded  docs/images/vscode-extension-host.png       submission evidence
 docs      A   bin      excluded  docs/images/vscode-svg-badge.png            submission evidence
 docs      A   bin      excluded  docs/images/vscode-svg-outline.png          submission evidence
-docs      A   +29/-0   counted   docs/metrics/README.md                      submission evidence
-docs      A   +102/-0  counted   docs/metrics/generated.txt                  submission evidence
+docs      A   +32/-0   counted   docs/metrics/README.md                      submission evidence
+docs      A   +119/-0  counted   docs/metrics/generated.txt                  submission evidence
 docs      A   +126/-0  counted   docs/submission.md                          submission evidence
-docs      A   +6/-0    counted   examples/vscode-demo/.vscode/settings.json  -
+docs      A   +6/-0    counted   examples/vscode-demo/.vscode/settings.json  demo screenshot settings
 docs      A   +17/-0   counted   examples/vscode-demo/flowchart.svg          VSCode screenshot fixture
-docs      A   +6/-0    counted   examples/vscode-demo/nested/deep.svg        -
+docs      A   +6/-0    counted   examples/vscode-demo/nested/deep.svg        nested demo SVG
 docs      A   +2/-0    counted   examples/vscode-demo/notes.txt              non-SVG badge contrast fixture
 docs      A   +8/-0    counted   examples/vscode-demo/shapes.svg             VSCode screenshot fixture
 vscode    A   +52/-0   excluded  extension/package-lock.json                 -
@@ -34,8 +34,8 @@ vscode    A   +55/-0   counted   extension/package.json                      ext
 vscode    A   +74/-0   counted   extension/src/extension.ts                  VSCode badge and outline providers
 vscode    A   +91/-0   counted   extension/src/outline.ts                    source-positioned SVG outline parser
 vscode    A   +77/-0   counted   extension/test/outline.test.cjs             outline parser tests
-vscode    A   +1/-0    counted   extension/tsconfig.json                     -
-assembly  M   +5/-2    counted   package.json                                -
+vscode    A   +1/-0    counted   extension/tsconfig.json                     extension TypeScript config
+assembly  M   +5/-2    counted   package.json                                root scripts, metadata and test commands
 assembly  A   +1/-0    counted   plugins.config.json                         configuration assembly
 plugins   A   +120/-0  counted   plugins/box/index.ts                        box shape, persistence, attributes and (box) label
 plugins   A   +11/-0   counted   plugins/box/package.json                    box contributes declaration
@@ -45,19 +45,19 @@ plugins   A   +31/-0   counted   plugins/stats/index.ts                      sta
 plugins   A   +9/-0    counted   plugins/stats/package.json                  stats contributes declaration
 plugins   A   +56/-0   counted   plugins/tree-star/index.ts                  modified-star decorator with save baseline
 plugins   A   +9/-0    counted   plugins/tree-star/package.json              tree-star contributes declaration
-docs      A   +249/-0  counted   scripts/metrics.mjs                         metrics generator
+docs      A   +258/-0  counted   scripts/metrics.mjs                         metrics generator
 kernel    M   +27/-0   counted   src/application/Editor.ts                   editor use cases and observer events
 assembly  A   +20/-0   counted   src/cli/CommandCatalog.ts                   built-in command registration catalog
 assembly  M   +14/-10  counted   src/cli/CommandDispatcher.ts                command dispatch, plugin commands and help
-kernel    M   +2/-2    counted   src/commands/CommandHistory.ts              -
-kernel    M   +1/-1    counted   src/commands/CreateCommand.ts               -
-kernel    M   +6/-0    counted   src/commands/EditCommand.ts                 -
-kernel    M   +8/-0    counted   src/commands/MoveCommand.ts                 -
-kernel    M   +35/-3   counted   src/commands/SetCommand.ts                  attribute handler dispatch
+kernel    M   +2/-2    counted   src/commands/CommandHistory.ts              undo/redo history and descriptions
+kernel    M   +1/-1    counted   src/commands/CreateCommand.ts               create command and creation summary
+kernel    M   +6/-0    counted   src/commands/EditCommand.ts                 transactional edit snapshot boundary
+kernel    M   +8/-0    counted   src/commands/MoveCommand.ts                 move command and undo/redo messages
+kernel    M   +35/-3   counted   src/commands/SetCommand.ts                  attribute handler dispatch and messages
 kernel    A   +11/-0   counted   src/domain/Directory.ts                     public directory access port
 kernel    A   +33/-0   counted   src/domain/ExtensionPoints.ts               kernel-side extension interfaces
 kernel    M   +1/-0    counted   src/domain/Group.ts                         composite container and ungroup policy
-kernel    M   +9/-0    counted   src/domain/Shape.ts                         shape base plus afterRead hook
+kernel    M   +9/-0    counted   src/domain/Shape.ts                         shape base plus afterRead/creation hooks
 kernel    M   +59/-21  counted   src/domain/ShapeFactory.ts                  shape provider registration and snapshot
 kernel    M   +1/-0    counted   src/domain/SvgDocument.ts                   document tree and ungroup guard
 kernel    M   +10/-6   counted   src/infrastructure/SvgCodec.ts              SVG read/write and data-kind dispatch
@@ -74,7 +74,7 @@ tests     A   +143/-0  counted   test/dir.test.ts                            dir
 tests     A   +170/-0  counted   test/loader.test.ts                         loader failure, manifest and rollback tests
 tests     A   +11/-0   counted   test/plugin.test.ts                         plugin loading/integration tests
 tests     A   +46/-0   counted   test/stats.test.ts                          stats container/leaf and help tests
-tests     A   +30/-0   counted   test/support.ts                             -
+tests     A   +30/-0   counted   test/support.ts                             shared test harness and memory storage
 tests     A   +40/-0   counted   test/transcript.test.ts                     Phase 1/box/new-command transcripts
 tests     A   +71/-0   counted   test/tree-decorator.test.ts                 modified-star state machine tests
 assembly  A   +10/-0   counted   tsconfig.plugins.json                       typecheck for src, plugins and tests
@@ -90,7 +90,7 @@ assembly       9    367       14   353
 plugins        8    315        0   315
 vscode         5    298        0   298
 tests         11    776        1   775
-docs          21   1255       17  1238
+docs          21   1284       17  1267
 other          0      0        0     0
 CLI total     31    895       51   844
 
