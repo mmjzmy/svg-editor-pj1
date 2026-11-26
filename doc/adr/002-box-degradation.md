@@ -33,10 +33,18 @@ document. Nested boxes and extra children should remain possible.
   duplicate ids reject the read. `SvgDocument.add` validates the whole new subtree
   before insertion, so `create box` with a colliding `<id>-rect`/`<id>-label`
   fails atomically and leaves no container or children.
+- **Template and labels.** `create` builds the rect with the default fill
+  `#4a90d9` and the label at `x + 20, y + height / 2 + 5`, matching the Phase 1
+  §4.4 example. `Box.label` is the logical `box#<id>` used by command messages;
+  `Box.summary()` remains `g#<id>` so the tree line is `g#<id> (box)`. The
+  creation message includes the derived children
+  (`box#n1 created (g#n1 + rect#n1-rect + text#n1-label)`), and the box attribute
+  handlers provide `fill propagated` / `label updated` / `label restored`
+  messages for the §6.1 session.
 - **Invariants.** `Box.canUngroup()` returns false and `SvgDocument.ungroup`
-  rejects it. `Box.remove()` rejects deleting or moving a required
-  `<id>-rect`/`<id>-label`; deleting the box itself is allowed. Extra children may
-  be moved or deleted.
+  rejects it with `cannot ungroup composite shape: <id>`. `Box.remove()` rejects
+  deleting or moving a required `<id>-rect`/`<id>-label`; deleting the box itself
+  is allowed. Extra children may be moved or deleted.
 
 ## Consequences
 

@@ -8,10 +8,12 @@ Phase 1 的架构与语义见下文；Phase 2 在同一仓库继续开发，最�
 
 | 扩展点 | 内核接口 | 职责 | 内核调用位置 | 本阶段实现 | 禁用可选插件时的缺省行为 | 违约或错误 |
 |---|---|---|---|---|---|---|
-| `ShapeProvider` | `src/domain/ExtensionPoints.ts` | 创建一种图形，并从 SVG 属性读回 | `ShapeFactory.create()`、`ShapeFactory.fromAttributes()` | `plugins/box.ts`；六种内置图形仍由工厂构造器注册 | 六种 Phase 1 图形可用；`create box` 报 `error: unknown shape type: box (is the plugin loaded?)` | 重名 `error: duplicate registration: shapes/<name>`；未知类型 `error: unknown shape type: <type>`；读回校验失败则整次 `read` 失败 |
-| `CommandPlugin` | `src/plugin/api.ts` | 增加一条 CLI 命令，自带 `usage` | `CommandDispatcher.execute()`；`help` 从注册表取 `usage` | `plugins/stats.ts`、`plugins/dir.ts` | Phase 1 内置命令表继续工作；未加载时 `error: unknown command: stats` | 重名 `error: duplicate registration: commands/<name>`；`execute` 抛错由 dispatcher 转成 `error:` |
-| `TreeDecorator` | `src/domain/ExtensionPoints.ts` | 给结构树某一行追加标签 | `DocumentRenderer.tree()` 按注册顺序逐行调用 `decorate()` | `plugins/box.ts` 的 `box-type-label`；`plugins/tree-star.ts` 的 `modified-star` | 不注册任何装饰器时，树输出与 Phase 1 逐字节一致 | 重名 `error: duplicate registration: decorators/<name>`；装饰器抛错时该 `tree` 命令报错，不输出半行结果 |
-| `AttributeHandler` | `src/domain/ExtensionPoints.ts` | 为某类图形的某个属性定义领域语义 | `SetCommand.apply()`；`PluginRegistry.find()` | `plugins/box.ts` 的 `box-fill`、`box-label` | 回退到 Phase 1 属性白名单，例如普通 `rect` 可直接 `set fill` | 第一个匹配者生效；重名 `error: duplicate registration: attributes/<name>`；处理器抛错则整条 `set` 失败并回滚，不回退到默认处理 |
+| `ShapeProvider` | `src/domain/ExtensionPoints.ts` | 创建一种图形，并从 SVG 属性读回 | `ShapeFactory.create()`、`ShapeFactory.fromAttributes()` | `plugins/box/index.ts`；六种内置图形也在 `ShapeFactory` 构造器中通过同一个 `register()` 路径装配 | 六种 Phase 1 图形可用；`create box` 报 `error: unknown shape type: box (is the plugin loaded?)` | 重名 `error: duplicate registration: shapes/<name>`；未知类型 `error: unknown shape type: <type>`；读回校验失败则整次 `read` 失败 |
+| `CommandPlugin` | `src/plugin/api.ts` | 增加一条 CLI 命令，自带 `usage` | `CommandDispatcher.execute()`；`help` 从注册表取 `usage` | `plugins/stats/index.ts` 的 `StatsCommand`、`plugins/dir/index.ts` 的 `DirCommand` | `CommandCatalog` 中的内置命令继续工作；未加载时 `error: unknown command: stats` | 重名 `error: duplicate registration: commands/<name>`；`execute` 抛错由 dispatcher 转成 `error:` |
+| `TreeDecorator` | `src/domain/ExtensionPoints.ts` | 给结构树某一行追加标签 | `DocumentRenderer.tree()` 按注册顺序逐行调用 `decorate()` | `plugins/box/index.ts` 的 `BoxTypeLabel`；`plugins/tree-star/index.ts` 的 `ModifiedStarDecorator` | 不注册任何装饰器时，树输出与 Phase 1 逐字节一致 | 重名 `error: duplicate registration: decorators/<name>`；装饰器抛错时该 `tree` 命令报错，不输出半行结果 |
+| `AttributeHandler` | `src/domain/ExtensionPoints.ts` | 为某类图形的某个属性定义领域语义 | `SetCommand.apply()`；`PluginRegistry.find()` | `plugins/box/index.ts` 的 `BoxFillHandler`、`BoxLabelHandler` | 回退到 Phase 1 属性白名单，例如普通 `rect` 可直接 `set fill` | 第一个匹配者生效；重名 `error: duplicate registration: attributes/<name>`；处理器抛错则整条 `set` 失败并回滚，不回退到默认处理 |
+
+插件扩展点都用类或类实例实现：`BoxProvider`、`BoxFillHandler`、`BoxLabelHandler`、`BoxTypeLabel`、`StatsCommand`、`DirCommand`、`ModifiedStarDecorator`。每个插件目录的 `package.json` 用 `contributes` 声明提供哪些扩展（如 `plugins/box/package.json` 声明 `shapes: ["box"]`、`attributes: [...]`、`decorators: [...]`）；加载器读取模块最近的 `package.json`，内联/data URL 模块则回退到模块内 `manifest`。
 
 #### ShapeProvider
 
@@ -37,7 +39,7 @@ export interface CommandPlugin {
 }
 ```
 
-`CommandDispatcher` 先查 Phase 1 内置命令表，再查 `PluginRegistry.commands`；`help` 拼接内置 `usage` 与插件 `usage`。`stats` 与 `dir` 都是独立插件，内核没有针对命令名的分支。`dir` 的 `execute` 只依赖 `DirectoryAccess`，不直接依赖 `node:fs`。
+`CommandDispatcher` 先查 `CommandCatalog` 的内置命令，再查 `PluginRegistry.commands`；`help` 拼接内置 `usage` 与插件 `usage`。内置命令在构造时通过 `CommandCatalog.register` 装配，插件命令通过 `PluginRegistry.registerCommand` 装配。`stats` 与 `dir` 都是独立插件，内核没有针对命令名的分支。`dir` 的 `execute` 只依赖 `DirectoryAccess`，不直接依赖 `node:fs`。
 
 #### TreeDecorator
 
@@ -84,8 +86,8 @@ const factory = new ShapeFactory();
 const registry = new PluginRegistry();
 const editor = new Editor(new FileSvgStorage(new SvgCodec(factory)));
 const loader = new PluginLoader(factory, registry, editor);
-await loader.load({ module: './plugins/box.ts' });
-await loader.load({ module: './plugins/tree-star.ts' });
+await loader.load({ module: './plugins/box/index.ts' });
+await loader.load({ module: './plugins/tree-star/index.ts' });
 ```
 
 `load()` 负责动态导入，`loadModule()` 可直接接收已经导入的 `PluginModule`；两者都进入同一个 `activateModule()`，执行清单校验和回滚。`test/plugin.test.ts`、`test/assembly.test.ts` 使用这条路径。代价是新增插件要改组合根并重新构建，但类型检查完整、调试直接。
@@ -95,15 +97,17 @@ await loader.load({ module: './plugins/tree-star.ts' });
 ```json
 {
   "plugins": [
-    { "module": "./plugins/box.ts" },
-    { "module": "./plugins/stats.ts" },
-    { "module": "./plugins/dir.ts" },
-    { "module": "./plugins/tree-star.ts" }
+    { "module": "./plugins/box/index.ts" },
+    { "module": "./plugins/stats/index.ts" },
+    { "module": "./plugins/dir/index.ts" },
+    { "module": "./plugins/tree-star/index.ts" }
   ]
 }
 ```
 
 启动时 `npx tsx src/main.ts --config plugins.config.json`。相对模块路径以配置文件目录为基准；`enabled: false` 完全跳过；`options` 原样传给 `activate(context, options)`。`dir` 的 `options.cwd` 仅用于测试/演示固定目录，默认仍是 CLI 进程的 `cwd`。两种方式对固定目录执行 `dir` 的输出逐字节一致，见 `test/dir.test.ts`；一个包含 `box`、`stats`、`dir`、`tree`、`save` 的混合会话在两种方式下也逐字节一致，见 `test/assembly.test.ts`。
+
+每个插件目录的 `package.json` 用 `contributes` 声明扩展，例如 `plugins/box/package.json`。加载器从被加载模块最近的 `package.json` 读取声明与包名；`loadModule()`/data URL 等内联模块没有 package.json 时回退到模块 `manifest`。两条路径最终都进入 `activateModule()` 的清单比对和回滚。
 
 加载器失败路径：
 
@@ -123,21 +127,21 @@ await loader.load({ module: './plugins/tree-star.ts' });
 
 | 角色 | 本实现 |
 |---|---|
-| Target（目标接口） | `DirectoryAccess.list(path)`，位于 `src/plugin/Directory.ts` |
-| Adapter（适配器） | `FileSystemDirectoryAccess`，把 `node:fs/promises.readdir` 适配为 `DirectoryEntry[]` |
-| Client（客户端） | `plugins/dir.ts` 的 `dir` 命令 |
+| Target（目标接口） | `DirectoryAccess.list(path)`，位于 `src/domain/Directory.ts` |
+| Adapter（适配器） | `FileSystemDirectoryAccess`，位于 `plugins/dir/index.ts`，把 `node:fs/promises.readdir` 适配为 `DirectoryEntry[]` |
+| Client（客户端） | `plugins/dir/index.ts` 的 `dir` 命令 |
 | Test Double | `test/dir.test.ts` 的 `fake(entries)`，与真实适配器实现同一接口 |
 
-`DirectoryEntry` 分为 `directory`、`file`、`other`；目录在前、文件次之、特殊项最后，各组按名称升序。隐藏项包含，`.`/`..` 不列出；空目录输出 `(empty directory)`；读取失败输出 `error: cannot read directory: <path>`。
+`DirectoryEntry` 分为 `directory`、`file`、`other`；目录在前、文件次之、特殊项最后，各组按名称升序。普通目录和文件分别显示 `[DIR]  <name>`、`[FILE] <name>`；符号链接等特殊项显示为 `[OTHER] <name>`，不跟随其目标。隐藏项包含，`.`/`..` 不列出；空目录输出 `(empty directory)`；读取失败输出 `error: cannot read directory: <path>`。
 
 ### 2.3 重构前后的架构变化
 
-Phase 1 的两张“按名字分派”表（`CommandDispatcher` 的内置命令表、`ShapeFactory` 的图形定义表）保留为默认能力；Phase 2 在它们旁边增加了可注入注册表：
+Phase 1 的两张“按名字分派”表（`CommandDispatcher`/`CommandCatalog` 的内置命令注册表、`ShapeFactory` 的图形注册表）保留为默认能力；Phase 2 在它们旁边增加了插件注册表与 `PluginLoader`：
 
 | 位置 | Phase 1 | Phase 2 |
 |---|---|---|
 | 图形创建/读回 | 工厂内静态定义 | `ShapeFactory` 注册的 `ShapeProvider`，内置图形仍由构造器注册 |
-| 命令分发 | 内置命令 `Map` | 内置表 + `PluginRegistry.commands`，插件命令优先查注册表 |
+| 命令分发 | 内置命令 `Map` | `CommandCatalog` 注册的内置命令 + `PluginRegistry.commands`，插件命令在未命中内置命令时查注册表 |
 | 树输出 | `DocumentRenderer` 直接拼行 | 渲染器逐行调用 `TreeDecorator`，内核不感知 `(box)` 或 `*` |
 | `set` | 直接 `shape.setAttribute` | `AttributeHandler` 先匹配，未命中才走 Phase 1 白名单 |
 | 文档事件 | 无 | `Editor.on()` 发 `init/read/save/edit/undo/redo/canvas`，供 `modified-star` 维护基线 |
@@ -268,13 +272,13 @@ code --extensionDevelopmentPath=. ..\examples\vscode-demo
 
 ```sh
 npm ci
-npm run check                 # build + typecheck(src/plugins/tests) + 94 项 CLI 测试
+npm run check                 # build + typecheck(src/plugins/tests) + 102 项 CLI 测试
 npm run check:extension       # extension 编译 + 6 项 Outline 测试
 npm run metrics               # 生成 docs/metrics/generated.txt
 npx tsx src/main.ts --config plugins.config.json
 ```
 
-CLI 测试覆盖 Phase 1 回归、四个扩展点、加载器失败路径、`dir` 适配器、`box` 读写/降级/不变量、`modified-star` 状态机、属性处理器事务、双装配逐字节一致。扩展测试覆盖嵌套、无 id、编辑更新、CRLF、属性中的 `>`、自闭合、注释和非法 XML。VSCode 的运行证据见 2.4 的三张截图。
+CLI 测试覆盖 Phase 1 回归、四个扩展点、加载器失败路径、`dir` 适配器、`box` 读写/降级/不变量、`modified-star` 状态机、属性处理器事务、双装配逐字节一致；`doc/transcript/` 保存 Phase 1、box 和新增命令三个输入/预期输出对，`test/transcript.test.ts` 逐条回放。扩展测试覆盖嵌套、无 id、编辑更新、CRLF、属性中的 `>`、自闭合、注释和非法 XML。VSCode 的运行证据见 2.4 的三张截图。
 
 ## Phase 1：架构方案
 
@@ -351,7 +355,7 @@ View --> Domain
 
 理由：图形与编辑语义应能脱离终端和文件系统使用；持久化适配器依赖应用定义的接口，使存储细节不会反向进入用例；显示模块只读取领域对象。
 
-按名字分派只保留两处：`CommandDispatcher` 的内置命令表、`ShapeFactory` 的图形定义表。Phase 2 没有删除这两张默认表，而是在它们旁边增加了可注入的注册表与 `PluginLoader`：内置能力仍由构造器注册，插件命令/图形/标签/属性处理器走注册表。详见 §2.3。
+按名字分派只保留两处：`CommandCatalog` 的内置命令注册表、`ShapeFactory` 的图形注册表。Phase 2 没有删除这两张默认表，而是在它们旁边增加了可注入的插件注册表与 `PluginLoader`：内置能力由构造器通过 `register` 装配，插件命令/图形/标签/属性处理器走插件注册表。详见 §2.3。
 
 ### 变化点假设
 
@@ -440,7 +444,7 @@ npm run test:coverage
 npm run cli < examples/flowchart.commands
 ```
 
-验收日期为 2026-10-24，环境为 Node.js 24.21.0；项目要求 Node.js 22 或更新版本。Phase 1 验收时 `npm run check` 包含严格 TypeScript 编译和 **59 项自动化测试，全部通过**；Phase 2 当前为 **94 项 CLI 测试 + 6 项扩展测试**，见 §2.7。Phase 1 覆盖率由 c8 测量，本次行覆盖率为 **99.26%**，分支覆盖率为 **95.71%**，函数覆盖率为 **99.55%**。真实文件测试使用临时目录并在结束后清理；交互终端另外检查过提示符、中文输入、容器移动和撤销。
+验收日期为 2026-10-24，环境为 Node.js 24.21.0；项目要求 Node.js 22 或更新版本。Phase 1 验收时 `npm run check` 包含严格 TypeScript 编译和 **59 项自动化测试，全部通过**；Phase 2 当前为 **102 项 CLI 测试 + 6 项扩展测试**，见 §2.7。Phase 1 覆盖率由 c8 测量，本次行覆盖率为 **99.26%**，分支覆盖率为 **95.71%**，函数覆盖率为 **99.55%**。真实文件测试使用临时目录并在结束后清理；交互终端另外检查过提示符、中文输入、容器移动和撤销。
 
 质量依据来自行为断言，而不只是覆盖率：例如失败命令前后比较结构并继续 redo；中途数值溢出时检查前面已处理的子图形也回滚；读写回环比较每个元素的属性、文字和层级。覆盖率未覆盖到的部分主要为防御性异常分支及非自动化的终端提示分支。
 

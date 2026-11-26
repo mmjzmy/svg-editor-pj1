@@ -6,11 +6,11 @@
 
 ```sh
 npm ci
-npm run check          # build + typecheck(src/plugins/tests) + 94 项 CLI 测试
+npm run check          # build + typecheck(src/plugins/tests) + 102 项 CLI 测试
 npm run check:extension # extension 编译 + 6 项 Outline 测试
 ```
 
-当前结果：**CLI 94 / 94 通过，VSCode 扩展 6 / 6 通过**。CLI 测试包含 Phase 1 的 59 项回归。
+当前结果：**CLI 102 / 102 通过，VSCode 扩展 6 / 6 通过**。CLI 测试包含 Phase 1 的 59 项回归。
 
 `npm run typecheck` 使用 `tsconfig.plugins.json` 同时检查 `src/`、`plugins/` 和 `test/`，避免插件与测试只在运行时被 `tsx` 类型擦除。
 
@@ -23,7 +23,8 @@ npm run check:extension # extension 编译 + 6 项 Outline 测试
   - 激活中途抛错 → shape 注册回滚；
   - 顶层模块缺失 → `plugin not found`；
   - 模块存在但依赖缺失 → `plugin failed to load`（不误报 not found）；
-  - 无默认导出、三类非法配置、`enabled: false`、`options` 传递、代码装配 `loadModule`。
+  - 无默认导出、三类非法配置、`enabled: false`、`options` 传递、代码装配 `loadModule`；
+  - 插件目录 `package.json` 的 `contributes` 与包名被读取，声明不一致时回滚。
 - `test/dir.test.ts`：
   - `formatEntries` 的目录/文件/特殊项排序、隐藏项、空目录；
   - 测试替身 `DirectoryAccess` 与固定 `cwd`；
@@ -45,6 +46,8 @@ npm run check:extension # extension 编译 + 6 项 Outline 测试
   - 两个装饰器实例状态隔离。
 - `test/attribute.test.ts`：第一个匹配处理器生效；部分修改后抛错整体回滚；无处理器时回退 Phase 1 白名单；box 的 `fill`/`label` 各自为一个 undo 单元。
 - `test/assembly.test.ts`：同一混合会话（`box`/`stats`/`dir`/`tree`/`save`）在代码装配与配置装配下输出逐字节一致。
+- `test/stats.test.ts`：空 `g` 仍计为容器、叶子顺序、空文档、`help` 中只有加载后才出现、`stats` 不进入 undo。
+- `test/transcript.test.ts`：读取 `doc/transcript/cli-1.txt`、`cli-2-box.txt`、`cli-3-new.txt`，与对应 `.expected.txt` 逐条比较；`cli-2` 是 Phase 1 §6.1 的 box 会话。
 
 ## 功能兼容性验证
 

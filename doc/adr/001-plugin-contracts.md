@@ -40,6 +40,11 @@ export interface AttributeHandler {
   partial change into the document, undo, or redo.
 - One successful `set` is one `EditCommand`, therefore one undo unit. Box `fill`
   and `label` are separate commands and separate undo units.
+- `capture`, `describeApply`, and `describeUndo` are optional extension methods
+  used for domain-specific command messages. They do not change the required
+  `handles`/`apply` contract; the base `SetCommand` falls back to its generic
+  `updated`/`undone` text. The box handlers implement them as classes to produce
+  `fill propagated`, `label updated`, and `label restored` in the §6.1 session.
 
 ## Consequences
 

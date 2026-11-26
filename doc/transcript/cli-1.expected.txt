@@ -1,0 +1,18 @@
+canvas 400x200 created
+---
+g#scene created
+---
+rect#r1 created in g#scene
+---
+text#t1 created in g#scene
+---
+g#scene moved by (5,5)
+---
+g#scene moved back by (-5,-5)
+---
+g#scene moved by (5,5)
+---
+svg (400x200)
+└── g#scene
+    ├── rect#r1 x=15 y=25 w=30 h=40 fill=#4a90d9
+    └── text#t1 (25,45) "Hello"

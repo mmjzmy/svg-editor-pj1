@@ -22,9 +22,11 @@ registrations behind.
   `ShapeFactory` definitions and `PluginRegistry` commands/decorators/attributes.
   The `PluginContext` wrappers record every registered name by category. Any
   failure restores both snapshots, leaving earlier plugins untouched.
-- **Manifest check.** Declarations come from `mod.contributes`,
-  `manifest.contributes`, or the manifest's category fields. After activation the
-  loader compares the declared name sets with the recorded sets. A mismatch
+- **Manifest check.** Declarations come from the nearest package.json
+  `contributes` (and its `name`); inline/data URL modules without a package.json
+  fall back to `mod.contributes`, `manifest.contributes`, or the manifest's
+  category fields. After activation the loader compares the declared name sets
+  with the recorded sets. A mismatch
   produces `error: plugin manifest mismatch: <name> (declared: …; registered: …)`
   and rolls the plugin back.
 - **Duplicates.** `PluginRegistry`/`ShapeFactory` throw

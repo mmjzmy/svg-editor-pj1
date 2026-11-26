@@ -1,0 +1,5 @@
+# Phase 2 new command session
+init
+create rect r1 0 0 10 10
+stats
+dir

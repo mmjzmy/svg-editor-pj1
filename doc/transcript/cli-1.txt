@@ -1,0 +1,9 @@
+# Phase 1 baseline: no optional plugins
+init 400 200
+create g scene
+create rect r1 10 20 30 40 #4a90d9 in scene
+create text t1 20 40 "Hello" in scene
+move scene 5 5
+undo
+redo
+tree

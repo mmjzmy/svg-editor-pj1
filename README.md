@@ -19,10 +19,10 @@ TypeScript 面向对象实现的可扩展 SVG 编辑器：Phase 1 提供 CLI、�
 **插件（Phase 2）**
 
 - 四个内核侧扩展点：`ShapeProvider`、`CommandPlugin`、`TreeDecorator`、`AttributeHandler`。
-- `plugins/stats.ts`：按图形类型统计叶子，单独统计容器。
-- `plugins/dir.ts`：通过 `DirectoryAccess` 适配器列出当前工作目录。
-- `plugins/box.ts`：`create box`、`set fill`/`set label`、`data-kind="box"` 持久化、读回校验和未装插件时的 `g` 降级。
-- `plugins/tree-star.ts`：`modified-star`，按“内容是否偏离上次保存/读入”标记 `*`，并传播到祖先行；与 `(box)` 标签并存。
+- `plugins/stats/index.ts`：按图形类型统计叶子，单独统计容器。
+- `plugins/dir/index.ts`：通过 `DirectoryAccess` 适配器列出当前工作目录。
+- `plugins/box/index.ts`：`create box`、`set fill`/`set label`、`data-kind="box"` 持久化、读回校验和未装插件时的 `g` 降级。
+- `plugins/tree-star/index.ts`：`modified-star`，按“内容是否偏离上次保存/读入”标记 `*`，并传播到祖先行；与 `(box)` 标签并存。
 - 同一个插件既可由组合根代码装配，也可由 `plugins.config.json` 配置装配；加载器负责 manifest 校验、重复注册、失败回滚和 `error:` 输出。
 
 **VSCode 扩展**
@@ -92,13 +92,13 @@ code --new-window --extensionDevelopmentPath=".\extension" ".\examples\vscode-de
 ## 验证
 
 ```sh
-npm run check           # build + typecheck(src/plugins/tests) + 94 项 CLI 测试
+npm run check           # build + typecheck(src/plugins/tests) + 102 项 CLI 测试
 npm run check:extension # extension 编译 + 6 项 Outline 测试
 npm run test:coverage   # CLI 覆盖率
 npm run metrics         # 生成 docs/metrics/generated.txt
 ```
 
-当前结果：**CLI 94 / 94 通过，VSCode 扩展 6 / 6 通过**。测试覆盖 Phase 1 回归、四个扩展点、加载器失败与回滚、`dir` 适配器、`box` 读写/降级/不变量、`modified-star` 状态机、属性处理器事务，以及代码/配置双装配逐字节一致。
+当前结果：**CLI 102 / 102 通过，VSCode 扩展 6 / 6 通过**。测试覆盖 Phase 1 回归、四个扩展点、加载器失败与回滚、`dir` 适配器、`box` 读写/降级/不变量、`modified-star` 状态机、属性处理器事务，以及代码/配置双装配逐字节一致。
 
 默认装配不加载可选插件，Phase 1 的命令、六种图形和输出保持不变；`create box` 只有在加载 `box` 插件后可用。path、defs/use、完整 SVG 标准支持和全局 transform 换算仍不在范围内，详见 [doc/README.md](doc/README.md)。
 
