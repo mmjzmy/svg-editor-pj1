@@ -136,7 +136,7 @@ await loader.load({ module: './plugins/tree-star/index.ts' });
 
 ### 2.3 重构前后的架构变化
 
-Phase 1 的两张“按名字分派”表（`CommandDispatcher`/`CommandCatalog` 的内置命令注册表、`ShapeFactory` 的图形注册表）保留为默认能力；Phase 2 在它们旁边增加了插件注册表与 `PluginLoader`：
+下面这张对照表和 PlantUML 图就是 Phase 1 → Phase 2 的迭代报告。Phase 1 的两张“按名字分派”表（`CommandDispatcher`/`CommandCatalog` 的内置命令注册表、`ShapeFactory` 的图形注册表）保留为默认能力；Phase 2 在它们旁边增加了插件注册表与 `PluginLoader`：
 
 | 位置 | Phase 1 | Phase 2 |
 |---|---|---|
@@ -195,7 +195,7 @@ git diff --name-status <接入提交>^ <接入提交> -- src plugins
 git diff <接入提交>^ <接入提交> -- src/domain src/commands src/application src/presentation src/plugin ':!<本次新增插件目录>'
 ```
 
-本次 `box`、`stats`、`dir`、`tree-star` 各自只新增 `plugins/*.ts`；加载器、渲染器、`SetCommand`、`ShapeFactory` 的通用改动已在框架提交中完成。`plugins.config.json` 的新增只改配置，不改运行代码。`PluginLoader` 的独立性检查：
+本次 `box`、`stats`、`dir`、`tree-star` 的接入提交各自只新增对应的 `plugins/<name>/` 插件目录；加载器、渲染器、`SetCommand`、`ShapeFactory`、`CommandCatalog` 的通用改动在框架提交中完成。`plugins.config.json` 的配置装配只改配置，不改运行代码。`PluginLoader` 的独立性检查：
 
 ```sh
 rg -n "import|require|switch" src/plugin/PluginLoader.ts

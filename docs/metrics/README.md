@@ -2,7 +2,10 @@
 
 `generated.txt` is produced by `npm run metrics` (`scripts/metrics.mjs`). The script reads
 the committed history (`git diff --numstat final..HEAD`, or `final..p2` once the tag exists)
-and writes the report; no number is typed by hand.
+and writes the report; no number is typed by hand. Because the report is itself committed,
+the recorded `Head` is the last code/docs commit before the final report commit; `p2` adds
+only the report (and any final documentation-only fix), so the product-code totals are the
+same as `final..p2`.
 
 Report contents:
 
