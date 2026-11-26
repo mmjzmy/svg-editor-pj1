@@ -7,7 +7,7 @@ const allowed: Record<string, readonly string[]> = {
   domain: ['domain'],
   commands: ['commands', 'domain'],
   application: ['application', 'commands', 'domain'],
-  cli: ['cli', 'application', 'commands', 'domain', 'presentation'],
+  cli: ['cli', 'application', 'commands', 'domain', 'presentation', 'plugin'],
   infrastructure: ['infrastructure', 'application', 'domain'],
   presentation: ['presentation', 'domain'],
 };

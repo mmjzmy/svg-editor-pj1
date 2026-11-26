@@ -5,7 +5,9 @@ import { Editor } from './application/Editor.js';
 import { DocumentRenderer } from './presentation/DocumentRenderer.js';
 import { CommandDispatcher } from './cli/CommandDispatcher.js';
 import { Cli } from './cli/Cli.js';
+import { PluginRegistry } from './plugin/Registry.js';
 
 const factory = new ShapeFactory();
+const registry = new PluginRegistry();
 const editor = new Editor(new FileSvgStorage(new SvgCodec(factory)));
-await new Cli(new CommandDispatcher(editor, factory, new DocumentRenderer())).run();
+await new Cli(new CommandDispatcher(editor, factory, new DocumentRenderer(), registry)).run();

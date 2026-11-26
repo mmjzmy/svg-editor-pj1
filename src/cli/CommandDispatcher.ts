@@ -12,6 +12,7 @@ import { AddToCommand } from '../commands/AddToCommand.js';
 import { ZOrderCommand } from '../commands/ZOrderCommand.js';
 import { Tokenizer } from './Tokenizer.js';
 import { Arguments } from './Arguments.js';
+import { PluginRegistry } from '../plugin/Registry.js';
 
 type Handler = { usage: string; run: (args: Arguments) => string | Promise<string> };
 
@@ -20,7 +21,7 @@ export class CommandDispatcher {
   readonly #tokenizer = new Tokenizer();
   readonly #handlers: ReadonlyMap<string, Handler>;
   #shouldExit = false;
-  constructor(editor: Editor, factory: ShapeFactory, renderer: DocumentRenderer) {
+  constructor(private readonly editor: Editor, factory: ShapeFactory, renderer: DocumentRenderer, private readonly plugins = new PluginRegistry()) {
     this.#handlers = new Map<string, Handler>([
       ['init', { usage: 'init [w] [h]', run: a => {
         a.count(0, 2); return editor.init(a.length >= 1 ? a.number(0, 'width') : 800, a.length === 2 ? a.number(1, 'height') : 600);
@@ -44,7 +45,7 @@ export class CommandDispatcher {
         a.count(2); return editor.execute(new ScaleCommand(a.value(0), a.number(1, 'scale factor')));
       } }],
       ['set', { usage: 'set <id> <attr> <value>', run: a => {
-        a.count(3); return editor.execute(new SetCommand(a.value(0), a.value(1), a.value(2)));
+        a.count(3); return editor.execute(new SetCommand(a.value(0), a.value(1), a.value(2), [...this.plugins.attributes]));
       } }],
       ['group', { usage: 'group <newGid> <id1> [id2…]', run: a => {
         a.count(2, Number.MAX_SAFE_INTEGER); return editor.execute(new GroupCommand(a.value(0), a.values(1)));
@@ -62,7 +63,7 @@ export class CommandDispatcher {
       ['undo', { usage: 'undo', run: a => { a.count(0); return editor.undo(); } }],
       ['redo', { usage: 'redo', run: a => { a.count(0); return editor.redo(); } }],
       ['help', { usage: 'help', run: a => {
-        a.count(0); return Array.from(this.#handlers.values(), handler => handler.usage).join('\n');
+        a.count(0); return [...Array.from(this.#handlers.values(), handler => handler.usage), ...Array.from(this.plugins.commands.values(), command => command.usage)].join('\n');
       } }],
       ['exit', { usage: 'exit', run: a => { a.count(0); this.#shouldExit = true; return 'bye'; } }],
       ['quit', { usage: 'quit', run: a => { a.count(0); this.#shouldExit = true; return 'bye'; } }],
@@ -75,10 +76,11 @@ export class CommandDispatcher {
       if (!tokens.length) return '';
       const name = tokens[0]!.value;
       const handler = this.#handlers.get(name);
-      if (!handler) throw new Error(`unknown command: ${name}`);
+      if (!handler) { const plugin = this.plugins.commands.get(name); if (plugin) return await plugin.execute(this.editor, tokens.slice(1).map(token => token.value)); throw new Error(`unknown command: ${name}`); }
       return await handler.run(new Arguments(tokens.slice(1), handler.usage));
     } catch (error) {
       return `error: ${(error instanceof Error ? error.message : String(error)).replace(/[\r\n]+/g, ' ')}`;
     }
   }
 }
+
