@@ -31,7 +31,7 @@ test('a handler that throws after a partial change does not touch document or hi
 
 test('a handler that partially edits both box children rolls the whole set back', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/box.ts' });
+  await h.loader.load({ module: './plugins/box/index.ts' });
   h.registry.attributes.unshift({
     name: 'boom-box',
     handles: (shape, attr) => shape.id === 'b' && attr === 'fill',
@@ -51,7 +51,7 @@ test('a handler that partially edits both box children rolls the whole set back'
 
 test('without a matching handler the Phase 1 whitelist still applies', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/box.ts' });
+  await h.loader.load({ module: './plugins/box/index.ts' });
   await h.cli.execute('init');
   await h.cli.execute('create rect r1 0 0 10 10');
   assert.match(await h.cli.execute('set r1 fill red'), /updated/);
@@ -60,7 +60,7 @@ test('without a matching handler the Phase 1 whitelist still applies', async () 
 
 test('each box set is one undo unit', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/box.ts' });
+  await h.loader.load({ module: './plugins/box/index.ts' });
   await h.cli.execute('init');
   await h.cli.execute('create box b 0 0 20 10 "x"');
   await h.cli.execute('set b fill red');

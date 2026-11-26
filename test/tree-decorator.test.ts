@@ -4,7 +4,7 @@ import { createHarness } from './support.js';
 
 test('modified-star follows save, edit, undo to save point and redo', async () => {
   const h = createHarness();
-  assert.deepEqual(await h.loader.load({ module: './plugins/tree-star.ts' }), []);
+  assert.deepEqual(await h.loader.load({ module: './plugins/tree-star/index.ts' }), []);
   await h.cli.execute('init');
   await h.cli.execute('create g flow');
   await h.cli.execute('create rect r1 10 20 100 50 in flow');
@@ -32,8 +32,8 @@ test('modified-star follows save, edit, undo to save point and redo', async () =
 
 test('box label and modified-star compose in registration order', async () => {
   const h = createHarness();
-  assert.deepEqual(await h.loader.load({ module: './plugins/box.ts' }), []);
-  assert.deepEqual(await h.loader.load({ module: './plugins/tree-star.ts' }), []);
+  assert.deepEqual(await h.loader.load({ module: './plugins/box/index.ts' }), []);
+  assert.deepEqual(await h.loader.load({ module: './plugins/tree-star/index.ts' }), []);
   await h.cli.execute('init');
   await h.cli.execute('create box b 0 0 20 10 "x"');
   const tree = await h.cli.execute('tree');
@@ -50,8 +50,8 @@ test('box label and modified-star compose in registration order', async () => {
 test('modified-star keeps its baseline per plugin instance, not in module state', async () => {
   const first = createHarness();
   const second = createHarness();
-  await first.loader.load({ module: './plugins/tree-star.ts' });
-  await second.loader.load({ module: './plugins/tree-star.ts' });
+  await first.loader.load({ module: './plugins/tree-star/index.ts' });
+  await second.loader.load({ module: './plugins/tree-star/index.ts' });
   await first.cli.execute('init');
   await second.cli.execute('init');
   await first.cli.execute('create rect r1 0 0 10 10');
@@ -61,7 +61,7 @@ test('modified-star keeps its baseline per plugin instance, not in module state'
 
 test('modified-star marks a changed subtree root', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/tree-star.ts' });
+  await h.loader.load({ module: './plugins/tree-star/index.ts' });
   await h.cli.execute('init');
   await h.cli.execute('create g flow');
   await h.cli.execute('create rect r1 0 0 10 10 in flow');

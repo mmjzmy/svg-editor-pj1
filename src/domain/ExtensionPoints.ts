@@ -13,6 +13,12 @@ export interface AttributeHandler {
   readonly name: string;
   handles(shape: Shape, attr: string): boolean;
   apply(shape: Shape, value: string): void;
+  /** Optional previous-value capture used for undo messages. */
+  capture?(shape: Shape, attr: string): string | undefined;
+  /** Optional domain-specific success message. */
+  describeApply?(shape: Shape, attr: string, value: string): string;
+  /** Optional domain-specific undo message. */
+  describeUndo?(shape: Shape, attr: string, before: string | undefined): string;
 }
 
 export interface TreeDecoratorContext {

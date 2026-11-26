@@ -105,7 +105,7 @@ export class SvgDocument {
     const group = this.container(id);
     const parent = this.parent(group);
     if (parent === this.root) throw new Error(`cannot ungroup top-level container: ${id}`);
-    if (!group.canUngroup()) throw new Error(`cannot ungroup ${id}`);
+    if (!group.canUngroup()) throw new Error(group.ungroupErrorMessage(id));
     const index = parent.remove(group);
     const children = group.children;
     children.forEach((node, offset) => { group.remove(node); parent.insert(node, index + offset); });

@@ -10,6 +10,6 @@ export class CreateCommand extends EditCommand {
     const parent = this.parentId === undefined ? document.root : document.container(this.parentId);
     const shape = this.factory.create(this.type, this.id, this.params);
     document.add(shape, parent);
-    return `${shape.label} created${this.parentId === undefined ? '' : ` in ${parent.label}`}`;
+    return `${shape.creationSummary()}${this.parentId === undefined ? '' : ` in ${parent.label}`}`;
   }
 }

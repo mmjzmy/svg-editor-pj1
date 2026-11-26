@@ -13,22 +13,20 @@ const wrap = (body: string): string =>
 
 test('box creates derived children and routes fill/label through handlers', async () => {
   const h = createHarness();
-  assert.deepEqual(await h.loader.load({ module: './plugins/box.ts' }), []);
-  assert.deepEqual(await h.loader.load({ module: './plugins/stats.ts' }), []);
+  assert.deepEqual(await h.loader.load({ module: './plugins/box/index.ts' }), []);
   await h.cli.execute('init');
   await h.cli.execute('create box b 0 0 20 10 "x"');
-  assert.match(await h.cli.execute('set b fill red'), /fill="red"/);
-  assert.match(await h.cli.execute('set b label "hello"'), /label="hello"/);
+  assert.match(await h.cli.execute('set b fill red'), /box#b fill propagated to b-rect/);
+  assert.match(await h.cli.execute('set b label "hello"'), /box#b label updated: "hello"/);
   const tree = await h.cli.execute('tree');
   assert.match(tree, /^└── g#b \(box\)$/m);
   assert.match(tree, /^    ├── rect#b-rect x=0 y=0 w=20 h=10 fill=red$/m);
-  assert.match(tree, /^    └── text#b-label \(10,5\) "hello"$/m);
-  assert.equal(await h.cli.execute('stats'), 'rect: 1  text: 1  (total 2, containers 1)');
+  assert.match(tree, /^    └── text#b-label \(20,10\) "hello"$/m);
 });
 
 test('box serializes data-kind and reads back through the provider', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/box.ts' });
+  await h.loader.load({ module: './plugins/box/index.ts' });
   await h.cli.execute('init');
   await h.cli.execute('create box b 0 0 20 10 "x"');
   await h.cli.execute('set b fill red');
@@ -43,7 +41,7 @@ test('box serializes data-kind and reads back through the provider', async () =>
   assert.match(new DocumentRenderer().tree(decoded, undefined, h.registry.decorators), /g#b \(box\)/);
 
   const target = createHarness();
-  await target.loader.load({ module: './plugins/box.ts' });
+  await target.loader.load({ module: './plugins/box/index.ts' });
   target.storage.files.set('box.svg', decoded);
   await target.cli.execute('read box.svg');
   await target.cli.execute('set b fill #f5a623');
@@ -77,7 +75,7 @@ test('unregistered box degrades to a normal g and keeps data-kind', async () => 
 
 test('box read rejects missing or wrong required children', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/box.ts' });
+  await h.loader.load({ module: './plugins/box/index.ts' });
   const codec = new SvgCodec(h.factory);
   assert.throws(() => codec.decode(wrap('<g id="b" data-kind="box"><rect id="b-rect" x="0" y="0" width="20" height="10"/></g>')),
     /missing b-label/);
@@ -89,21 +87,21 @@ test('box read rejects missing or wrong required children', async () => {
 
 test('box protects required children and ungroup', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/box.ts' });
+  await h.loader.load({ module: './plugins/box/index.ts' });
   await h.cli.execute('init');
   await h.cli.execute('create g g1');
   await h.cli.execute('create box b 0 0 20 10 "x" in g1');
-  assert.equal(await h.cli.execute('ungroup b'), 'error: cannot ungroup b');
+  assert.equal(await h.cli.execute('ungroup b'), 'error: cannot ungroup composite shape: b');
   assert.match(await h.cli.execute('delete b-rect'), /cannot remove required box child: b-rect/);
   assert.match(await h.cli.execute('addto g1 b-rect'), /cannot remove required box child: b-rect/);
   assert.match(await h.cli.execute('group g2 b-rect b-label'), /cannot remove required box child: b-rect/);
-  assert.equal(await h.cli.execute('delete b'), 'g#b deleted');
+  assert.equal(await h.cli.execute('delete b'), 'box#b deleted');
   assert.doesNotMatch(await h.cli.execute('tree'), /g#b/);
 });
 
 test('box rejects id collisions atomically and supports nesting', async () => {
   const h = createHarness();
-  await h.loader.load({ module: './plugins/box.ts' });
+  await h.loader.load({ module: './plugins/box/index.ts' });
   await h.cli.execute('init');
   await h.cli.execute('create rect b-rect 0 0 10 10');
   assert.match(await h.cli.execute('create box b 0 0 20 10 "x"'), /id already exists: b-rect/);

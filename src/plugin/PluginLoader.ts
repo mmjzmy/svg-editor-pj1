@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { readFile as readFileAsync } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Editor } from '../application/Editor.js';
 import type { PluginContext, PluginContributes, PluginModule } from './api.js';
@@ -13,6 +13,11 @@ export type PluginSpec = {
   module: string;
   enabled?: boolean;
   options?: Record<string, unknown>;
+};
+
+type PackageMeta = {
+  readonly name?: string;
+  readonly contributes?: PluginContributes;
 };
 
 const CATEGORIES = ['shapes', 'commands', 'decorators', 'attributes'] as const;
@@ -59,7 +64,7 @@ export class PluginLoader {
       return [`error: plugin failed to load: ${spec.module} (${message(error)})`];
     }
     if (!mod) return [`error: plugin has no default export: ${spec.module}`];
-    return this.activateModule(mod, spec);
+    return this.activateModule(mod, spec, await this.packageMetaOf(spec.module, target));
   }
 
   /** Code assembly path: activate an already-imported module through the same validation. */
@@ -67,8 +72,8 @@ export class PluginLoader {
     return this.activateModule(mod, { module: label, options });
   }
 
-  private async activateModule(mod: PluginModule, spec: PluginSpec): Promise<string[]> {
-    const name = mod.manifest?.name ?? spec.module;
+  private async activateModule(mod: PluginModule, spec: PluginSpec, meta?: PackageMeta): Promise<string[]> {
+    const name = meta?.name ?? mod.manifest?.name ?? spec.module;
     const factorySnapshot = this.factory.snapshot();
     const registrySnapshot = this.registry.snapshot();
     const registered: Registered = { shapes: [], commands: [], decorators: [], attributes: [] };
@@ -87,7 +92,7 @@ export class PluginLoader {
       if (reason.startsWith('duplicate registration: ')) return [`error: ${reason}`];
       return [`error: plugin failed to activate: ${name} (${reason})`];
     }
-    const declared = contributesOf(mod);
+    const declared = meta?.contributes ?? contributesOf(mod);
     if (!sameContributes(declared, registered)) {
       this.rollback(factorySnapshot, registrySnapshot);
       return [`error: plugin manifest mismatch: ${name} (declared: ${format(declared)}; registered: ${format(registered)})`];
@@ -105,6 +110,39 @@ export class PluginLoader {
    * located. A missing dependency inside an existing module is a load failure,
    * not a top-level "not found".
    */
+  /**
+   * Reads the nearest package.json for a module file. Relative plugin folders
+   * declare contributes there; data URLs and inline modules fall back to the
+   * module manifest.
+   */
+  private async packageMetaOf(spec: string, target: string): Promise<PackageMeta | undefined> {
+    let file: string | undefined;
+    if (target.startsWith('file://')) {
+      try { file = fileURLToPath(target); } catch { return undefined; }
+    } else if (!target.startsWith('data:') && !target.startsWith('http:')) {
+      try { file = requireFromHere.resolve(spec); } catch { return undefined; }
+    }
+    if (!file) return undefined;
+    let dir = dirname(file);
+    while (true) {
+      const pkg = join(dir, 'package.json');
+      if (existsSync(pkg)) {
+        try {
+          const raw = JSON.parse(await readFileAsync(pkg, 'utf8')) as { name?: unknown; contributes?: unknown };
+          return {
+            name: typeof raw.name === 'string' ? raw.name : undefined,
+            contributes: isContributes(raw.contributes) ? raw.contributes : undefined,
+          };
+        } catch {
+          return undefined;
+        }
+      }
+      const parent = dirname(dir);
+      if (parent === dir) return undefined;
+      dir = parent;
+    }
+  }
+
   private targetOf(spec: string, base: string): string | undefined {
     if (spec.startsWith('data:') || spec.startsWith('http:')) return spec;
     if (spec.startsWith('.')) {
@@ -160,6 +198,15 @@ function contributesOf(mod: PluginModule): PluginContributes {
     decorators: manifest.decorators,
     attributes: manifest.attributes,
   };
+}
+
+function isContributes(value: unknown): value is PluginContributes {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  return CATEGORIES.every(category => {
+    const list = record[category];
+    return list === undefined || (Array.isArray(list) && list.every(item => typeof item === 'string'));
+  });
 }
 
 function sameContributes(declared: PluginContributes, registered: Registered): boolean {

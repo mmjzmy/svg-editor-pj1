@@ -19,7 +19,7 @@ export class CommandHistory {
     if (!command) throw new Error('nothing to undo');
     const document = command.undo();
     this.#undo.pop(); this.#redo.push(command);
-    return { document, message: `undone: ${command.description}` };
+    return { document, message: command.undoDescription(document) };
   }
   redo(): { document: SvgDocument; message: string } {
     this.checkBarrier();
@@ -27,7 +27,7 @@ export class CommandHistory {
     if (!command) throw new Error('nothing to redo');
     const document = command.redo();
     this.#redo.pop(); this.#undo.push(command);
-    return { document, message: `redone: ${command.description}` };
+    return { document, message: command.redoDescription(document) };
   }
   blockAfterIo(): void {
     this.#undo = []; this.#redo = []; this.#ioBarrier = true;

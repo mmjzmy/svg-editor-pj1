@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createDirPlugin } from '../plugins/dir.js';
+import { createDirPlugin } from '../plugins/dir/index.js';
 import { createHarness } from './support.js';
 
 test('code and config assembly produce byte-identical output for a mixed session', async () => {
@@ -28,19 +28,19 @@ test('code and config assembly produce byte-identical output for a mixed session
     ];
 
     const code = createHarness();
-    assert.deepEqual(await code.loader.load({ module: './plugins/box.ts' }), []);
-    assert.deepEqual(await code.loader.load({ module: './plugins/stats.ts' }), []);
+    assert.deepEqual(await code.loader.load({ module: './plugins/box/index.ts' }), []);
+    assert.deepEqual(await code.loader.load({ module: './plugins/stats/index.ts' }), []);
     assert.deepEqual(await code.loader.loadModule(createDirPlugin({ cwd: () => fixture }), 'dir-code'), []);
-    assert.deepEqual(await code.loader.load({ module: './plugins/tree-star.ts' }), []);
+    assert.deepEqual(await code.loader.load({ module: './plugins/tree-star/index.ts' }), []);
     const codeOutput: string[] = [];
     for (const line of script) codeOutput.push(await code.cli.execute(line));
 
     await writeFile(configPath, JSON.stringify({
       plugins: [
-        { module: './plugins/box.ts' },
-        { module: './plugins/stats.ts' },
-        { module: './plugins/dir.ts', options: { cwd: fixture } },
-        { module: './plugins/tree-star.ts' },
+        { module: './plugins/box/index.ts' },
+        { module: './plugins/stats/index.ts' },
+        { module: './plugins/dir/index.ts', options: { cwd: fixture } },
+        { module: './plugins/tree-star/index.ts' },
       ],
     }), 'utf8');
     const config = createHarness();

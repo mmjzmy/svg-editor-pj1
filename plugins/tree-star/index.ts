@@ -1,7 +1,7 @@
-import type { EditorEvent } from '../src/application/Editor.js';
-import type { SvgDocument } from '../src/domain/SvgDocument.js';
-import type { Shape } from '../src/domain/Shape.js';
-import type { PluginModule, TreeDecorator, TreeDecoratorContext } from '../src/plugin/api.js';
+import type { EditorEvent } from '../../src/application/Editor.js';
+import type { SvgDocument } from '../../src/domain/SvgDocument.js';
+import type { Shape } from '../../src/domain/Shape.js';
+import type { PluginModule, TreeDecorator, TreeDecoratorContext } from '../../src/plugin/api.js';
 
 /**
  * Marks rows whose content differs from the last saved/loaded document.

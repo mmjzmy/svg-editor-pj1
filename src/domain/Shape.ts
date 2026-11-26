@@ -26,6 +26,12 @@ export abstract class Shape {
   abstract clone(): Shape;
   abstract summary(): string;
 
+  /** Default creation message; composite providers may describe derived children. */
+  creationSummary(): string { return `${this.label} created`; }
+
+  /** Error text used when a container refuses ungroup. */
+  ungroupErrorMessage(id: string): string { return `cannot ungroup ${id}`; }
+
   /** Called by the codec after children are attached; composite providers may validate invariants. */
   afterRead(): void {}
 

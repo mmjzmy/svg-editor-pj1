@@ -1,6 +1,7 @@
-import { FileSystemDirectoryAccess } from '../src/plugin/Directory.js';
-import type { DirectoryAccess, DirectoryEntry } from '../src/plugin/Directory.js';
-import type { CommandPlugin, PluginModule } from '../src/plugin/api.js';
+import { readdir } from 'node:fs/promises';
+import type { Editor } from '../../src/application/Editor.js';
+import type { CommandPlugin, PluginModule } from '../../src/plugin/api.js';
+import type { DirectoryAccess, DirectoryEntry } from '../../src/domain/Directory.js';
 
 export interface DirOptions {
   readonly access?: DirectoryAccess;
@@ -21,17 +22,35 @@ export function formatEntries(entries: readonly DirectoryEntry[]): string {
   ].join('\n') || '(empty directory)';
 }
 
+export class FileSystemDirectoryAccess implements DirectoryAccess {
+  async list(path: string): Promise<DirectoryEntry[]> {
+    try {
+      const entries = await readdir(path, { withFileTypes: true });
+      return entries.map(entry => ({
+        name: entry.name,
+        kind: entry.isDirectory() ? 'directory' : entry.isFile() ? 'file' : 'other',
+      }));
+    } catch {
+      throw new Error(`cannot read directory: ${path}`);
+    }
+  }
+}
+
+export class DirCommand implements CommandPlugin {
+  readonly name = 'dir';
+  readonly usage = 'dir';
+  constructor(
+    private readonly access: DirectoryAccess = new FileSystemDirectoryAccess(),
+    private readonly cwd: () => string = () => process.cwd(),
+  ) {}
+  async execute(_editor: Editor, args: string[]): Promise<string> {
+    if (args.length) throw new Error('usage: dir');
+    return formatEntries(await this.access.list(this.cwd()));
+  }
+}
+
 export function createDirCommand(options: DirOptions = {}): CommandPlugin {
-  const access = options.access ?? new FileSystemDirectoryAccess();
-  const cwd = options.cwd ?? (() => process.cwd());
-  return {
-    name: 'dir',
-    usage: 'dir',
-    async execute(_editor, args) {
-      if (args.length) throw new Error('usage: dir');
-      return formatEntries(await access.list(cwd()));
-    },
-  };
+  return new DirCommand(options.access, options.cwd);
 }
 
 export function createDirPlugin(defaults: DirOptions = {}): PluginModule {
@@ -43,7 +62,7 @@ export function createDirPlugin(defaults: DirOptions = {}): PluginModule {
         ?? new FileSystemDirectoryAccess();
       const configuredCwd = options?.cwd;
       const cwd = typeof configuredCwd === 'string' ? (() => configuredCwd) : defaults.cwd ?? (() => process.cwd());
-      ctx.commands.register(createDirCommand({ access, cwd }));
+      ctx.commands.register(new DirCommand(access, cwd));
     },
   };
 }

@@ -24,4 +24,10 @@ export abstract class EditCommand {
     return this.#after.clone();
   }
   get description(): string { return this.#description; }
+
+  /** Message after undo; commands may override with domain-specific wording. */
+  undoDescription(_document: SvgDocument): string { return `undone: ${this.description}`; }
+
+  /** Message after redo; commands may override with domain-specific wording. */
+  redoDescription(_document: SvgDocument): string { return `redone: ${this.description}`; }
 }

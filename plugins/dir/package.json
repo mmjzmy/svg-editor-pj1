@@ -1,0 +1,9 @@
+{
+  "name": "@svgframe/plugin-command-dir",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "contributes": {
+    "commands": ["dir"]
+  }
+}

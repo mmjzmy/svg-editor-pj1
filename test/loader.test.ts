@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHarness } from './support.js';
@@ -73,6 +73,27 @@ test('loader distinguishes a missing module from a broken module', async () => {
     const result = await h.loader.load({ module: './broken.ts' }, dir);
     assert.match(result[0]!, /^error: plugin failed to load: \.\/broken\.ts/);
     assert.doesNotMatch(result[0]!, /plugin not found/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('loader reads package.json contributes and uses the package name', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'svg-plugin-pkg-'));
+  try {
+    await mkdir(join(dir, 'plugin'));
+    await writeFile(join(dir, 'plugin', 'package.json'), JSON.stringify({
+      name: '@test/mismatched-package',
+      type: 'module',
+      contributes: { commands: ['declared'] },
+    }), 'utf8');
+    await writeFile(join(dir, 'plugin', 'index.ts'), `export default {
+      activate(ctx) { ctx.commands.register({ name: 'actual', usage: 'actual', execute() { return ''; } }); }
+    };\n`, 'utf8');
+    const h = createHarness();
+    const result = await h.loader.load({ module: './plugin/index.ts' }, dir);
+    assert.match(result[0]!, /^error: plugin manifest mismatch: @test\/mismatched-package/);
+    assert.equal(h.registry.commands.size, 0);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

@@ -1,1 +1,1 @@
-{"plugins":[{"module":"./plugins/box.ts"},{"module":"./plugins/stats.ts"},{"module":"./plugins/dir.ts"},{"module":"./plugins/tree-star.ts"}]}
+{"plugins":[{"module":"./plugins/box/index.ts"},{"module":"./plugins/stats/index.ts"},{"module":"./plugins/dir/index.ts"},{"module":"./plugins/tree-star/index.ts"}]}

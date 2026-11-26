@@ -12,17 +12,18 @@ import { AddToCommand } from '../commands/AddToCommand.js';
 import { ZOrderCommand } from '../commands/ZOrderCommand.js';
 import { Tokenizer } from './Tokenizer.js';
 import { Arguments } from './Arguments.js';
+import { CommandCatalog } from './CommandCatalog.js';
 import { PluginRegistry } from '../plugin/Registry.js';
 
 type Handler = { usage: string; run: (args: Arguments) => string | Promise<string> };
 
-/** The only command-name dispatch point. Phase 2 may inject a command registry. */
+/** The only command-name dispatch point. */
 export class CommandDispatcher {
   readonly #tokenizer = new Tokenizer();
-  readonly #handlers: ReadonlyMap<string, Handler>;
+  readonly #commands = new CommandCatalog();
   #shouldExit = false;
   constructor(private readonly editor: Editor, factory: ShapeFactory, renderer: DocumentRenderer, private readonly plugins = new PluginRegistry()) {
-    this.#handlers = new Map<string, Handler>([
+    const handlers: Array<[string, Handler]> = [
       ['init', { usage: 'init [w] [h]', run: a => {
         a.count(0, 2); return editor.init(a.length >= 1 ? a.number(0, 'width') : 800, a.length === 2 ? a.number(1, 'height') : 600);
       } }],
@@ -63,11 +64,12 @@ export class CommandDispatcher {
       ['undo', { usage: 'undo', run: a => { a.count(0); return editor.undo(); } }],
       ['redo', { usage: 'redo', run: a => { a.count(0); return editor.redo(); } }],
       ['help', { usage: 'help', run: a => {
-        a.count(0); return [...Array.from(this.#handlers.values(), handler => handler.usage), ...Array.from(this.plugins.commands.values(), command => command.usage)].join('\n');
+        a.count(0); return [...this.#commands.usages(), ...Array.from(this.plugins.commands.values(), command => command.usage)].join('\n');
       } }],
       ['exit', { usage: 'exit', run: a => { a.count(0); this.#shouldExit = true; return 'bye'; } }],
       ['quit', { usage: 'quit', run: a => { a.count(0); this.#shouldExit = true; return 'bye'; } }],
-    ]);
+    ];
+    for (const [name, handler] of handlers) this.#commands.register(name, handler.usage, handler.run);
   }
   get shouldExit(): boolean { return this.#shouldExit; }
   async execute(line: string): Promise<string> {
@@ -75,7 +77,7 @@ export class CommandDispatcher {
       const tokens = this.#tokenizer.tokenize(line);
       if (!tokens.length) return '';
       const name = tokens[0]!.value;
-      const handler = this.#handlers.get(name);
+      const handler = this.#commands.get(name);
       if (!handler) { const plugin = this.plugins.commands.get(name); if (plugin) return await plugin.execute(this.editor, tokens.slice(1).map(token => token.value)); throw new Error(`unknown command: ${name}`); }
       return await handler.run(new Arguments(tokens.slice(1), handler.usage));
     } catch (error) {

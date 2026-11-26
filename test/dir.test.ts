@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { FileSystemDirectoryAccess } from '../src/plugin/Directory.js';
-import type { DirectoryAccess, DirectoryEntry } from '../src/plugin/Directory.js';
-import { createDirCommand, createDirPlugin, formatEntries } from '../plugins/dir.js';
+import { FileSystemDirectoryAccess } from '../plugins/dir/index.js';
+import type { DirectoryAccess, DirectoryEntry } from '../src/domain/Directory.js';
+import { createDirCommand, createDirPlugin, formatEntries } from '../plugins/dir/index.js';
 import { createHarness } from './support.js';
 
 const fake = (entries: readonly DirectoryEntry[]): DirectoryAccess => ({
@@ -96,7 +96,7 @@ test('code and config assembly produce byte-identical dir output for the same di
     const codeOutput = await code.cli.execute('dir');
 
     await writeFile(configPath, JSON.stringify({
-      plugins: [{ module: './plugins/dir.ts', options: { cwd: dir } }],
+      plugins: [{ module: './plugins/dir/index.ts', options: { cwd: dir } }],
     }), 'utf8');
     const config = createHarness();
     assert.deepEqual(await config.loader.loadConfig(configPath), []);
@@ -111,6 +111,9 @@ test('code and config assembly produce byte-identical dir output for the same di
 });
 
 test('dir works before init and does not touch document or undo history', async () => {
+  const off = createHarness();
+  assert.equal(await off.cli.execute('dir'), 'error: unknown command: dir');
+
   const h = createHarness();
   assert.deepEqual(await h.loader.loadModule(createDirPlugin({ access: fake([]), cwd: () => '/fixed' }), 'dir-empty'), []);
   assert.equal(await h.cli.execute('dir'), '(empty directory)');

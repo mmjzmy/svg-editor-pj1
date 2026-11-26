@@ -8,4 +8,12 @@ export class MoveCommand extends EditCommand {
     shape.move(this.dx, this.dy);
     return `${shape.label} moved by (${this.dx},${this.dy})`;
   }
+  override undoDescription(document: SvgDocument): string {
+    const shape = document.find(this.id);
+    return `${shape.label} moved back by (${-this.dx},${-this.dy})`;
+  }
+  override redoDescription(document: SvgDocument): string {
+    const shape = document.find(this.id);
+    return `${shape.label} moved by (${this.dx},${this.dy})`;
+  }
 }
