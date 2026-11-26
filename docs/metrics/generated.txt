@@ -1,11 +1,12 @@
 Phase 2 metrics (generated from git history)
 Range: final..HEAD
 Base: b0b58f0
-Head: ecefeb7 docs(metrics): classify the new plugin, test and VSCode files
-Generated: 2026-11-26T13:03:42.696Z
+Head: 7fa0615 docs(metrics): count infrastructure with the CLI kernel
+Generated: 2026-11-26T13:36:07.447Z
 
 == Changed files and responsibilities ==
 category  st  lines    scope     path                                        purpose
+docs      M   +83/-12  counted   README.md                                   project entry point and Phase 2 overview
 docs      M   +283/-5  counted   doc/README.md                               project documentation
 docs      A   +62/-0   counted   doc/adr/001-plugin-contracts.md             architecture decision record
 docs      A   +56/-0   counted   doc/adr/002-box-degradation.md              architecture decision record
@@ -15,7 +16,7 @@ docs      A   bin      excluded  docs/images/vscode-extension-host.png       sub
 docs      A   bin      excluded  docs/images/vscode-svg-badge.png            submission evidence
 docs      A   bin      excluded  docs/images/vscode-svg-outline.png          submission evidence
 docs      A   +29/-0   counted   docs/metrics/README.md                      submission evidence
-docs      A   +75/-0   counted   docs/metrics/generated.txt                  submission evidence
+docs      A   +100/-0  counted   docs/metrics/generated.txt                  submission evidence
 docs      A   +123/-0  counted   docs/submission.md                          submission evidence
 docs      A   +6/-0    counted   examples/vscode-demo/.vscode/settings.json  -
 docs      A   +17/-0   counted   examples/vscode-demo/flowchart.svg          VSCode screenshot fixture
@@ -34,7 +35,7 @@ plugins   A   +96/-0   counted   plugins/box.ts                              box
 plugins   A   +51/-0   counted   plugins/dir.ts                              dir command and injected directory access
 plugins   A   +4/-0    counted   plugins/stats.ts                            stats command
 plugins   A   +56/-0   counted   plugins/tree-star.ts                        modified-star decorator with save baseline
-docs      A   +239/-0  counted   scripts/metrics.mjs                         metrics generator
+docs      A   +242/-0  counted   scripts/metrics.mjs                         metrics generator
 kernel    M   +27/-0   counted   src/application/Editor.ts                   editor use cases and observer events
 assembly  M   +7/-5    counted   src/cli/CommandDispatcher.ts                command dispatch, plugin commands and help
 kernel    M   +4/-3    counted   src/commands/SetCommand.ts                  attribute handler dispatch
@@ -43,7 +44,7 @@ kernel    M   +1/-0    counted   src/domain/Group.ts                         com
 kernel    M   +3/-0    counted   src/domain/Shape.ts                         shape base plus afterRead hook
 kernel    M   +29/-10  counted   src/domain/ShapeFactory.ts                  shape provider registration and snapshot
 kernel    M   +1/-0    counted   src/domain/SvgDocument.ts                   document tree and ungroup guard
-other     M   +10/-6   counted   src/infrastructure/SvgCodec.ts              SVG read/write and data-kind dispatch
+kernel    M   +10/-6   counted   src/infrastructure/SvgCodec.ts              SVG read/write and data-kind dispatch
 assembly  M   +7/-2    counted   src/main.ts                                 composition root and assembly
 assembly  A   +27/-0   counted   src/plugin/Directory.ts                     directory access port + filesystem adapter
 assembly  A   +184/-0  counted   src/plugin/PluginLoader.ts                  module/config loading, manifest check and rollback
@@ -67,14 +68,14 @@ and binary assets are excluded. VSCode is reported separately and is not part of
 CLI total. Tests and docs are tracked but not counted as CLI product lines.
 
 category   files  added  deleted   net
-kernel         8    102       17    85
+kernel         9    112       23    89
 assembly       9    320        9   311
 plugins        4    207        0   207
 vscode         5    298        0   298
 tests          9    668        1   667
-docs          14   1032        5  1027
-other          1     10        6     4
-CLI total     21    629       26   603
+docs          15   1143       17  1126
+other          0      0        0     0
+CLI total     22    639       32   607
 
 == Cyclomatic complexity delta (changed code files, approximate) ==
 Complexity = 1 + count of if/for/while/case/catch/&&/||/?: per changed file, after
@@ -82,19 +83,20 @@ stripping comments and string literals. This is a lightweight estimate, not a fu
 CFG-based measurement.
 
 category  files  final  head  delta
-kernel        8     78    89     11
+kernel        9     79    90     11
 assembly      6     13    59     46
 plugins       4      0    53     53
 vscode        3      0    38     38
 tests         9     10    23     13
-docs          1      0    34     34
-other         1      1     1      0
+docs          1      0    36     36
+other         0      0     0      0
 
 == Method ==
 - Line counts: git diff --numstat --no-renames final..HEAD
 - Change status: git diff --name-status --no-renames final..HEAD
 - Complexity: git show final:<path> and git show HEAD:<path>, then the regex
   counter above. New files count from 0; deleted files count to 0.
-- Categories: kernel = src/domain,src/commands,src/application,src/presentation;
+- Categories: kernel = src/domain,src/commands,src/application,src/presentation,src/infrastructure;
   assembly = src/main.ts,src/cli,src/plugin,root package/config files;
-  plugins = plugins/; vscode = extension/ (separate); tests = test/; docs = doc,docs,scripts.
+  plugins = plugins/; vscode = extension/ (separate); tests = test/;
+  docs = doc,docs,scripts,examples,README.
