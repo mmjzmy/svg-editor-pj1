@@ -30,7 +30,8 @@ function category(path) {
   if (path.startsWith('plugins/')) return 'plugins';
   if (path === 'src/main.ts' || path.startsWith('src/cli/') || path.startsWith('src/plugin/')) return 'assembly';
   if (path.startsWith('src/domain/') || path.startsWith('src/commands/')
-    || path.startsWith('src/application/') || path.startsWith('src/presentation/')) return 'kernel';
+    || path.startsWith('src/application/') || path.startsWith('src/presentation/')
+    || path.startsWith('src/infrastructure/')) return 'kernel';
   if (path.startsWith('test/')) return 'tests';
   if (path === 'README.md' || path.startsWith('doc/') || path.startsWith('docs/') || path.startsWith('scripts/') || path.startsWith('examples/')) return 'docs';
   if (['package.json', 'plugins.config.json', 'tsconfig.json', 'tsconfig.plugins.json'].includes(path)) return 'assembly';
@@ -230,9 +231,10 @@ ${renderComplexity()}
 - Change status: git diff --name-status --no-renames ${RANGE}
 - Complexity: git show ${BASE}:<path> and git show ${HEAD}:<path>, then the regex
   counter above. New files count from 0; deleted files count to 0.
-- Categories: kernel = src/domain,src/commands,src/application,src/presentation;
+- Categories: kernel = src/domain,src/commands,src/application,src/presentation,src/infrastructure;
   assembly = src/main.ts,src/cli,src/plugin,root package/config files;
-  plugins = plugins/; vscode = extension/ (separate); tests = test/; docs = doc,docs,scripts.
+  plugins = plugins/; vscode = extension/ (separate); tests = test/;
+  docs = doc,docs,scripts,examples,README.
 `;
 
 mkdirSync('docs/metrics', { recursive: true });
