@@ -6,8 +6,11 @@ import { DocumentRenderer } from './presentation/DocumentRenderer.js';
 import { CommandDispatcher } from './cli/CommandDispatcher.js';
 import { Cli } from './cli/Cli.js';
 import { PluginRegistry } from './plugin/Registry.js';
-
+import { PluginLoader } from './plugin/PluginLoader.js';
 const factory = new ShapeFactory();
 const registry = new PluginRegistry();
+const loader = new PluginLoader(factory, registry);
+const config = process.argv.includes('--config') ? process.argv[process.argv.indexOf('--config') + 1] : undefined;
+if (config) for (const error of await loader.loadConfig(config)) console.error(error);
 const editor = new Editor(new FileSvgStorage(new SvgCodec(factory)));
 await new Cli(new CommandDispatcher(editor, factory, new DocumentRenderer(), registry)).run();
