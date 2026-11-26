@@ -32,12 +32,13 @@ function category(path) {
   if (path.startsWith('src/domain/') || path.startsWith('src/commands/')
     || path.startsWith('src/application/') || path.startsWith('src/presentation/')) return 'kernel';
   if (path.startsWith('test/')) return 'tests';
-  if (path.startsWith('doc/') || path.startsWith('docs/') || path.startsWith('scripts/') || path.startsWith('examples/')) return 'docs';
+  if (path === 'README.md' || path.startsWith('doc/') || path.startsWith('docs/') || path.startsWith('scripts/') || path.startsWith('examples/')) return 'docs';
   if (['package.json', 'plugins.config.json', 'tsconfig.json', 'tsconfig.plugins.json'].includes(path)) return 'assembly';
   return 'other';
 }
 
 const PURPOSE = {
+  'README.md': 'project entry point and Phase 2 overview',
   'src/domain/ExtensionPoints.ts': 'kernel-side extension interfaces',
   'src/plugin/api.ts': 'public plugin contract',
   'src/plugin/Registry.ts': 'registration tables, snapshot and lookup',
