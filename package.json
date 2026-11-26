@@ -2,17 +2,19 @@
   "name": "svg-editor-pj1",
   "version": "0.1.0",
   "private": true,
-  "description": "PJ1 Phase 1: object-oriented SVG command-line editor",
+  "description": "PJ1 SVG command-line editor with plugin extension points",
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.plugins.json",
     "cli": "tsx src/main.ts",
     "test": "tsx --test test/*.test.ts",
     "test:coverage": "c8 --include='src/**/*.ts' --reporter=text --reporter=lcov npm test",
-    "check": "npm run build && npm test",
+    "check": "npm run build && npm run typecheck && npm test",
+    "check:extension": "npm --prefix extension test",
     "metrics": "node scripts/metrics.mjs"
   },
   "dependencies": {

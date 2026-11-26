@@ -57,7 +57,7 @@ export class CommandDispatcher {
       ['front', { usage: 'front <id>', run: a => editor.execute(new ZOrderCommand(a.count(1).value(0), true)) }],
       ['back', { usage: 'back <id>', run: a => editor.execute(new ZOrderCommand(a.count(1).value(0), false)) }],
       ['tree', { usage: 'tree [id]', run: a => {
-        a.count(0, 1); return renderer.tree(editor.document, a.length ? a.value(0) : undefined);
+        a.count(0, 1); return renderer.tree(editor.document, a.length ? a.value(0) : undefined, this.plugins.decorators);
       } }],
       ['show', { usage: 'show <id>', run: a => renderer.show(editor.document, a.count(1).value(0)) }],
       ['undo', { usage: 'undo', run: a => { a.count(0); return editor.undo(); } }],

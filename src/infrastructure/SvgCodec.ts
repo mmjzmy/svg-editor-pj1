@@ -40,19 +40,23 @@ export class SvgCodec {
     const warnings: string[] = [];
     const readShape = (element: Element): Shape => {
       if (element.namespaceURI !== SvgCodec.namespace) throw new Error(`unsupported namespace: ${element.namespaceURI}`);
-      const type = element.localName ?? element.tagName;
+      const tag = element.localName ?? element.tagName;
       let id = element.getAttribute('id') ?? '';
       if (!id) {
-        let sequence = counters.get(type) ?? 0;
-        do { id = `${type}${++sequence}`; } while (reserved.has(id));
-        counters.set(type, sequence); reserved.add(id);
-        warnings.push(`warning: assigned id ${id} to unnamed <${type}>`);
+        let sequence = counters.get(tag) ?? 0;
+        do { id = `${tag}${++sequence}`; } while (reserved.has(id));
+        counters.set(tag, sequence); reserved.add(id);
+        warnings.push(`warning: assigned id ${id} to unnamed <${tag}>`);
       }
+      const dataKind = element.getAttribute('data-kind');
+      const type = dataKind && this.factory.has(dataKind) ? dataKind : tag;
+      if (dataKind && type !== dataKind) warnings.push(`warning: unknown data-kind ${dataKind} on <${tag}>; read as <${tag}>`);
       const shape = this.factory.fromAttributes(type, id, this.attributes(element), element.textContent ?? '');
       const children = this.elements(element);
       const group = shape.asContainer();
-      if (children.length && !group) throw new Error(`unsupported child element in <${type}>`);
+      if (children.length && !group) throw new Error(`unsupported child element in <${tag}>`);
       if (group) children.forEach(child => group.insert(readShape(child)));
+      shape.afterRead();
       return shape;
     };
     this.elements(root).forEach(element => document.add(readShape(element)));

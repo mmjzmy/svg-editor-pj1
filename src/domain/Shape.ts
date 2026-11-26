@@ -26,6 +26,9 @@ export abstract class Shape {
   abstract clone(): Shape;
   abstract summary(): string;
 
+  /** Called by the codec after children are attached; composite providers may validate invariants. */
+  afterRead(): void {}
+
   scale(factor: number): void {
     Numbers.positive(factor, 'scale factor');
     const next = new Map(this.#geometry);

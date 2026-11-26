@@ -35,6 +35,15 @@ export class ShapeFactory {
     this.#definitions.set(provider.name, provider);
   }
 
+  has(type: string): boolean { return this.#definitions.has(type); }
+
+  snapshot(): ReadonlyMap<string, unknown> { return new Map(this.#definitions); }
+
+  restore(snapshot: ReadonlyMap<string, unknown>): void {
+    this.#definitions.clear();
+    for (const [name, definition] of snapshot) this.#definitions.set(name, definition as Definition | ShapeProvider);
+  }
+
   create(type: string, id: string, params: string[]): Shape {
     const definition = this.definition(type);
     if ('create' in definition) return definition.create(id, params);

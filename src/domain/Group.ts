@@ -7,6 +7,7 @@ export class Group extends Shape {
   override get tag(): string { return 'g'; }
   override get children(): readonly Shape[] { return [...this.#children]; }
   override asContainer(): Group { return this; }
+  canUngroup(): boolean { return true; }
   override move(dx: number, dy: number): void {
     Numbers.parse(dx, 'dx'); Numbers.parse(dy, 'dy');
     for (const child of this.#children) child.move(dx, dy);
