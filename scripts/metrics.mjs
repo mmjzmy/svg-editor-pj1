@@ -32,31 +32,49 @@ function category(path) {
   if (path.startsWith('src/domain/') || path.startsWith('src/commands/')
     || path.startsWith('src/application/') || path.startsWith('src/presentation/')) return 'kernel';
   if (path.startsWith('test/')) return 'tests';
-  if (path.startsWith('doc/') || path.startsWith('docs/') || path.startsWith('scripts/')) return 'docs';
-  if (['package.json', 'plugins.config.json', 'tsconfig.json'].includes(path)) return 'assembly';
+  if (path.startsWith('doc/') || path.startsWith('docs/') || path.startsWith('scripts/') || path.startsWith('examples/')) return 'docs';
+  if (['package.json', 'plugins.config.json', 'tsconfig.json', 'tsconfig.plugins.json'].includes(path)) return 'assembly';
   return 'other';
 }
 
 const PURPOSE = {
   'src/domain/ExtensionPoints.ts': 'kernel-side extension interfaces',
   'src/plugin/api.ts': 'public plugin contract',
-  'src/plugin/Registry.ts': 'registration tables and lookup',
-  'src/plugin/PluginLoader.ts': 'module/config loading and rollback',
+  'src/plugin/Registry.ts': 'registration tables, snapshot and lookup',
+  'src/plugin/PluginLoader.ts': 'module/config loading, manifest check and rollback',
   'src/plugin/Directory.ts': 'directory access port + filesystem adapter',
-  'src/cli/CommandDispatcher.ts': 'command dispatch and help',
+  'src/cli/CommandDispatcher.ts': 'command dispatch, plugin commands and help',
   'src/commands/SetCommand.ts': 'attribute handler dispatch',
-  'src/domain/ShapeFactory.ts': 'shape provider registration',
+  'src/domain/ShapeFactory.ts': 'shape provider registration and snapshot',
+  'src/domain/Shape.ts': 'shape base plus afterRead hook',
+  'src/domain/Group.ts': 'composite container and ungroup policy',
+  'src/domain/SvgDocument.ts': 'document tree and ungroup guard',
+  'src/application/Editor.ts': 'editor use cases and observer events',
+  'src/presentation/DocumentRenderer.ts': 'tree rendering and decorator chain',
+  'src/infrastructure/SvgCodec.ts': 'SVG read/write and data-kind dispatch',
   'src/main.ts': 'composition root and assembly',
-  'plugins/box.ts': 'box shape, attributes and label',
+  'plugins/box.ts': 'box shape, persistence, attributes and (box) label',
   'plugins/stats.ts': 'stats command',
-  'plugins/dir.ts': 'dir command',
-  'plugins/tree-star.ts': 'modified-star decorator',
+  'plugins/dir.ts': 'dir command and injected directory access',
+  'plugins/tree-star.ts': 'modified-star decorator with save baseline',
   'plugins.config.json': 'configuration assembly',
   'scripts/metrics.mjs': 'metrics generator',
-  'test/plugin.test.ts': 'plugin loader/integration tests',
+  'test/plugin.test.ts': 'plugin loading/integration tests',
+  'test/loader.test.ts': 'loader failure, manifest and rollback tests',
+  'test/box.test.ts': 'box round-trip, degradation and invariant tests',
+  'test/dir.test.ts': 'dir adapter and dual-assembly tests',
+  'test/tree-decorator.test.ts': 'modified-star state machine tests',
+  'test/attribute.test.ts': 'attribute handler transaction tests',
+  'test/assembly.test.ts': 'code/config assembly byte-equality test',
   'test/architecture.test.ts': 'dependency boundary test',
+  'tsconfig.plugins.json': 'typecheck for src, plugins and tests',
   'extension/src/extension.ts': 'VSCode badge and outline providers',
+  'extension/src/outline.ts': 'source-positioned SVG outline parser',
+  'extension/test/outline.test.cjs': 'outline parser tests',
   'extension/package.json': 'extension manifest',
+  'examples/vscode-demo/flowchart.svg': 'VSCode screenshot fixture',
+  'examples/vscode-demo/shapes.svg': 'VSCode screenshot fixture',
+  'examples/vscode-demo/notes.txt': 'non-SVG badge contrast fixture',
 };
 
 function purpose(path) {
