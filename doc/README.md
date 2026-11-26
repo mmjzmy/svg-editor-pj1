@@ -221,15 +221,15 @@ vscode.commands.registerCommand('svgOutline.refresh', ...);
 
 **真实运行截图。** 以下截图来自本机 VSCode Extension Development Host，使用 `examples/vscode-demo` 工作区，不是附件参考图：
 
-![Extension Development Host 全图](images/vscode-extension-host.png)
+![Extension Development Host 全图](../docs/images/vscode-extension-host.png)
 
 *图 2.1：Extension Development Host 打开 `vscode-demo`，Explorer 中 `.svg` 文件显示 `[]`，文本编辑器显示 SVG 源码，下方 Outline 展示 `svg → g#flowchart → g#n1 → rect#start / text#start-label` 的嵌套层级。*
 
-![Explorer 文件标记特写](images/vscode-svg-badge.png)
+![Explorer 文件标记特写](../docs/images/vscode-svg-badge.png)
 
 *图 2.2：`flowchart.svg` 与 `shapes.svg` 右侧显示 `[]`；`notes.txt` 和目录没有标记。*
 
-![Outline 特写](images/vscode-svg-outline.png)
+![Outline 特写](../docs/images/vscode-svg-outline.png)
 
 *图 2.3：原生 Outline 的层级与 `tag#id` 标签；点击节点会定位到对应源码。*
 
