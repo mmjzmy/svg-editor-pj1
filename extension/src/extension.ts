@@ -1,14 +1,74 @@
 import * as vscode from 'vscode';
-import { DOMParser } from '@xmldom/xmldom';
+import { parseOutline, type OutlineNode } from './outline';
+
 class SvgOutline implements vscode.DocumentSymbolProvider {
   provideDocumentSymbols(document: vscode.TextDocument): vscode.DocumentSymbol[] {
-    try { const root = new DOMParser({ onError: () => { throw new Error('invalid XML'); } }).parseFromString(document.getText(), 'image/svg+xml').documentElement; if (!root) return []; const visit = (node: any): vscode.DocumentSymbol => { const id = node.getAttribute?.('id'); const label = id ? `${node.localName}#${id}` : node.localName; const line = Math.max(0, document.positionAt(document.getText().indexOf(`<${node.localName}`)).line); const symbol = new vscode.DocumentSymbol(label, node.localName, vscode.SymbolKind.Struct, new vscode.Range(line,0,line,Math.max(0,document.lineAt(line).text.length)), new vscode.Range(line,0,line,Math.max(0,document.lineAt(line).text.length))); symbol.children = Array.from(node.childNodes ?? []).filter((n: any) => n.nodeType === 1).map(visit); return symbol; }; return [visit(root)]; } catch { return []; }
+    const text = document.getText();
+    return parseOutline(text).map(node => this.toSymbol(document, node));
+  }
+
+  private toSymbol(document: vscode.TextDocument, node: OutlineNode): vscode.DocumentSymbol {
+    const range = new vscode.Range(document.positionAt(node.start), document.positionAt(node.end));
+    const symbol = new vscode.DocumentSymbol(
+      node.label,
+      node.tag,
+      node.children.length ? vscode.SymbolKind.Struct : vscode.SymbolKind.Object,
+      range,
+      range,
+    );
+    symbol.children = node.children.map(child => this.toSymbol(document, child));
+    return symbol;
   }
 }
-export function activate(context: vscode.ExtensionContext): void {
-  const selector = { language: 'svg', scheme: 'file' };
-  context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(selector, new SvgOutline()));
-  context.subscriptions.push(vscode.commands.registerCommand('svgOutline.refresh', () => vscode.commands.executeCommand('workbench.action.files.openFile')));
-  context.subscriptions.push(vscode.window.registerFileDecorationProvider({ provideFileDecoration(uri) { return uri.fsPath.toLowerCase().endsWith('.svg') ? { badge: '[]', tooltip: 'SVG document' } : undefined; } }));
+
+class SvgDecorationProvider implements vscode.FileDecorationProvider {
+  async provideFileDecoration(uri: vscode.Uri): Promise<vscode.FileDecoration | undefined> {
+    if (!/\.svg$/i.test(uri.path)) return undefined;
+    try {
+      const stat = await vscode.workspace.fs.stat(uri);
+      if ((stat.type & vscode.FileType.File) === 0) return undefined;
+    } catch {
+      return undefined;
+    }
+    return { badge: '[]', tooltip: 'SVG document' };
+  }
 }
+
+export function activate(context: vscode.ExtensionContext): void {
+  const selector: vscode.DocumentSelector = [
+    { language: 'svg', scheme: 'file' },
+    { pattern: '**/*.svg', scheme: 'file' },
+  ];
+  context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(selector, new SvgOutline()));
+  context.subscriptions.push(vscode.window.registerFileDecorationProvider(new SvgDecorationProvider()));
+  context.subscriptions.push(vscode.commands.registerCommand('svgOutline.refresh', () =>
+    vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer')));
+
+  const demo = vscode.workspace.getConfiguration('svgOutline').get<boolean>('demo') === true
+    || (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.SVG_OUTLINE_DEMO === '1';
+  if (demo) {
+    let done = false;
+    const focusOutline = async (): Promise<void> => {
+      if (done) return;
+      const tab = vscode.window.tabGroups.activeTabGroup.activeTab;
+      const activeIsSvg = vscode.window.activeTextEditor?.document.languageId === 'svg';
+      const tabIsSvg = typeof tab?.label === 'string' && tab.label.toLowerCase().endsWith('.svg');
+      if (!activeIsSvg && !tabIsSvg) return;
+      done = true;
+      try { await vscode.commands.executeCommand('workbench.action.reopenTextEditor'); } catch { /* already text */ }
+      await new Promise(resolve => setTimeout(resolve, 800));
+      try { await vscode.commands.executeCommand('workbench.action.closeAuxiliaryBar'); } catch { /* already closed */ }
+      try { await vscode.commands.executeCommand('notifications.clearAll'); } catch { /* no notifications */ }
+      await vscode.commands.executeCommand('workbench.view.explorer');
+      await vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer');
+      await vscode.commands.executeCommand('outline.focus');
+      try { await vscode.commands.executeCommand('outline.expand'); } catch { /* empty outline */ }
+    };
+    context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => { void focusOutline(); }));
+    context.subscriptions.push(vscode.window.tabGroups.onDidChangeTabs(() => { void focusOutline(); }));
+    const timer = setTimeout(() => { void focusOutline(); }, 2500);
+    context.subscriptions.push({ dispose: () => clearTimeout(timer) });
+  }
+}
+
 export function deactivate(): void {}

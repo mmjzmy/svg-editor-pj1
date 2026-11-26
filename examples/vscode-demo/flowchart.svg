@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <g id="flowchart">
+    <g id="n1">
+      <rect id="start" x="40" y="40" width="160" height="60" fill="#f5a623"/>
+      <text id="start-label" x="120" y="75">开始</text>
+    </g>
+    <g id="n2">
+      <rect id="process" x="240" y="40" width="160" height="60" fill="#4a90d9"/>
+      <text id="process-label" x="320" y="75">处理数据</text>
+    </g>
+    <circle id="done" cx="520" cy="70" r="30" fill="#7ed321"/>
+    <line id="arrow1" x1="200" y1="70" x2="240" y2="70" stroke="#333333"/>
+    <line id="arrow2" x1="400" y1="70" x2="490" y2="70" stroke="#333333"/>
+    <text x="40" y="160">没有 id 的说明文字</text>
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "svgOutline.demo": true,
+  "files.exclude": {
+    "**/.vscode": true
+  }
+}

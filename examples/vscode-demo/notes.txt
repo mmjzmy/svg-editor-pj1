@@ -1,0 +1,2 @@
+This plain text file must not receive the SVG badge in Explorer.
+It exists so the screenshot can show the contrast between .svg files and other files.
