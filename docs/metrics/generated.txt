@@ -1,23 +1,29 @@
 Phase 2 metrics (generated from git history)
 Range: final..HEAD
 Base: b0b58f0
-Head: 7fa0615 docs(metrics): count infrastructure with the CLI kernel
-Generated: 2026-11-26T13:36:07.447Z
+Head: a17b47c docs(metrics): classify packaged plugins, CommandCatalog and transcripts
+Generated: 2026-11-26T14:07:15.298Z
 
 == Changed files and responsibilities ==
 category  st  lines    scope     path                                        purpose
 docs      M   +83/-12  counted   README.md                                   project entry point and Phase 2 overview
-docs      M   +283/-5  counted   doc/README.md                               project documentation
-docs      A   +62/-0   counted   doc/adr/001-plugin-contracts.md             architecture decision record
-docs      A   +56/-0   counted   doc/adr/002-box-degradation.md              architecture decision record
+docs      M   +287/-5  counted   doc/README.md                               project documentation
+docs      A   +67/-0   counted   doc/adr/001-plugin-contracts.md             architecture decision record
+docs      A   +64/-0   counted   doc/adr/002-box-degradation.md              architecture decision record
 docs      A   +55/-0   counted   doc/adr/003-dirty-label.md                  architecture decision record
-docs      A   +71/-0   counted   doc/adr/004-loader-validation.md            architecture decision record
+docs      A   +73/-0   counted   doc/adr/004-loader-validation.md            architecture decision record
+docs      A   +18/-0   counted   doc/transcript/cli-1.expected.txt           project documentation
+docs      A   +9/-0    counted   doc/transcript/cli-1.txt                    project documentation
+docs      A   +29/-0   counted   doc/transcript/cli-2-box.expected.txt       project documentation
+docs      A   +12/-0   counted   doc/transcript/cli-2-box.txt                project documentation
+docs      A   +8/-0    counted   doc/transcript/cli-3-new.expected.txt       project documentation
+docs      A   +5/-0    counted   doc/transcript/cli-3-new.txt                project documentation
 docs      A   bin      excluded  docs/images/vscode-extension-host.png       submission evidence
 docs      A   bin      excluded  docs/images/vscode-svg-badge.png            submission evidence
 docs      A   bin      excluded  docs/images/vscode-svg-outline.png          submission evidence
 docs      A   +29/-0   counted   docs/metrics/README.md                      submission evidence
-docs      A   +100/-0  counted   docs/metrics/generated.txt                  submission evidence
-docs      A   +123/-0  counted   docs/submission.md                          submission evidence
+docs      A   +102/-0  counted   docs/metrics/generated.txt                  submission evidence
+docs      A   +126/-0  counted   docs/submission.md                          submission evidence
 docs      A   +6/-0    counted   examples/vscode-demo/.vscode/settings.json  -
 docs      A   +17/-0   counted   examples/vscode-demo/flowchart.svg          VSCode screenshot fixture
 docs      A   +6/-0    counted   examples/vscode-demo/nested/deep.svg        -
@@ -31,34 +37,45 @@ vscode    A   +77/-0   counted   extension/test/outline.test.cjs             out
 vscode    A   +1/-0    counted   extension/tsconfig.json                     -
 assembly  M   +5/-2    counted   package.json                                -
 assembly  A   +1/-0    counted   plugins.config.json                         configuration assembly
-plugins   A   +96/-0   counted   plugins/box.ts                              box shape, persistence, attributes and (box) label
-plugins   A   +51/-0   counted   plugins/dir.ts                              dir command and injected directory access
-plugins   A   +4/-0    counted   plugins/stats.ts                            stats command
-plugins   A   +56/-0   counted   plugins/tree-star.ts                        modified-star decorator with save baseline
-docs      A   +242/-0  counted   scripts/metrics.mjs                         metrics generator
+plugins   A   +120/-0  counted   plugins/box/index.ts                        box shape, persistence, attributes and (box) label
+plugins   A   +11/-0   counted   plugins/box/package.json                    box contributes declaration
+plugins   A   +70/-0   counted   plugins/dir/index.ts                        dir command, adapter and contributes declaration
+plugins   A   +9/-0    counted   plugins/dir/package.json                    dir contributes declaration
+plugins   A   +31/-0   counted   plugins/stats/index.ts                      stats command
+plugins   A   +9/-0    counted   plugins/stats/package.json                  stats contributes declaration
+plugins   A   +56/-0   counted   plugins/tree-star/index.ts                  modified-star decorator with save baseline
+plugins   A   +9/-0    counted   plugins/tree-star/package.json              tree-star contributes declaration
+docs      A   +249/-0  counted   scripts/metrics.mjs                         metrics generator
 kernel    M   +27/-0   counted   src/application/Editor.ts                   editor use cases and observer events
-assembly  M   +7/-5    counted   src/cli/CommandDispatcher.ts                command dispatch, plugin commands and help
-kernel    M   +4/-3    counted   src/commands/SetCommand.ts                  attribute handler dispatch
-kernel    A   +27/-0   counted   src/domain/ExtensionPoints.ts               kernel-side extension interfaces
+assembly  A   +20/-0   counted   src/cli/CommandCatalog.ts                   built-in command registration catalog
+assembly  M   +14/-10  counted   src/cli/CommandDispatcher.ts                command dispatch, plugin commands and help
+kernel    M   +2/-2    counted   src/commands/CommandHistory.ts              -
+kernel    M   +1/-1    counted   src/commands/CreateCommand.ts               -
+kernel    M   +6/-0    counted   src/commands/EditCommand.ts                 -
+kernel    M   +8/-0    counted   src/commands/MoveCommand.ts                 -
+kernel    M   +35/-3   counted   src/commands/SetCommand.ts                  attribute handler dispatch
+kernel    A   +11/-0   counted   src/domain/Directory.ts                     public directory access port
+kernel    A   +33/-0   counted   src/domain/ExtensionPoints.ts               kernel-side extension interfaces
 kernel    M   +1/-0    counted   src/domain/Group.ts                         composite container and ungroup policy
-kernel    M   +3/-0    counted   src/domain/Shape.ts                         shape base plus afterRead hook
-kernel    M   +29/-10  counted   src/domain/ShapeFactory.ts                  shape provider registration and snapshot
+kernel    M   +9/-0    counted   src/domain/Shape.ts                         shape base plus afterRead hook
+kernel    M   +59/-21  counted   src/domain/ShapeFactory.ts                  shape provider registration and snapshot
 kernel    M   +1/-0    counted   src/domain/SvgDocument.ts                   document tree and ungroup guard
 kernel    M   +10/-6   counted   src/infrastructure/SvgCodec.ts              SVG read/write and data-kind dispatch
 assembly  M   +7/-2    counted   src/main.ts                                 composition root and assembly
-assembly  A   +27/-0   counted   src/plugin/Directory.ts                     directory access port + filesystem adapter
-assembly  A   +184/-0  counted   src/plugin/PluginLoader.ts                  module/config loading, manifest check and rollback
+assembly  A   +231/-0  counted   src/plugin/PluginLoader.ts                  module/config/package.json loading, manifest check and rollback
 assembly  A   +39/-0   counted   src/plugin/Registry.ts                      registration tables, snapshot and lookup
 assembly  A   +40/-0   counted   src/plugin/api.ts                           public plugin contract
 kernel    M   +10/-4   counted   src/presentation/DocumentRenderer.ts        tree rendering and decorator chain
 tests     M   +1/-1    counted   test/architecture.test.ts                   dependency boundary test
 tests     A   +59/-0   counted   test/assembly.test.ts                       code/config assembly byte-equality test
 tests     A   +85/-0   counted   test/attribute.test.ts                      attribute handler transaction tests
-tests     A   +122/-0  counted   test/box.test.ts                            box round-trip, degradation and invariant tests
-tests     A   +140/-0  counted   test/dir.test.ts                            dir adapter and dual-assembly tests
-tests     A   +149/-0  counted   test/loader.test.ts                         loader failure, manifest and rollback tests
+tests     A   +120/-0  counted   test/box.test.ts                            box round-trip, degradation and invariant tests
+tests     A   +143/-0  counted   test/dir.test.ts                            dir adapter and dual-assembly tests
+tests     A   +170/-0  counted   test/loader.test.ts                         loader failure, manifest and rollback tests
 tests     A   +11/-0   counted   test/plugin.test.ts                         plugin loading/integration tests
+tests     A   +46/-0   counted   test/stats.test.ts                          stats container/leaf and help tests
 tests     A   +30/-0   counted   test/support.ts                             -
+tests     A   +40/-0   counted   test/transcript.test.ts                     Phase 1/box/new-command transcripts
 tests     A   +71/-0   counted   test/tree-decorator.test.ts                 modified-star state machine tests
 assembly  A   +10/-0   counted   tsconfig.plugins.json                       typecheck for src, plugins and tests
 
@@ -68,14 +85,14 @@ and binary assets are excluded. VSCode is reported separately and is not part of
 CLI total. Tests and docs are tracked but not counted as CLI product lines.
 
 category   files  added  deleted   net
-kernel         9    112       23    89
-assembly       9    320        9   311
-plugins        4    207        0   207
+kernel        14    213       37   176
+assembly       9    367       14   353
+plugins        8    315        0   315
 vscode         5    298        0   298
-tests          9    668        1   667
-docs          15   1143       17  1126
+tests         11    776        1   775
+docs          21   1255       17  1238
 other          0      0        0     0
-CLI total     22    639       32   607
+CLI total     31    895       51   844
 
 == Cyclomatic complexity delta (changed code files, approximate) ==
 Complexity = 1 + count of if/for/while/case/catch/&&/||/?: per changed file, after
@@ -83,11 +100,11 @@ stripping comments and string literals. This is a lightweight estimate, not a fu
 CFG-based measurement.
 
 category  files  final  head  delta
-kernel        9     79    90     11
-assembly      6     13    59     46
-plugins       4      0    53     53
+kernel       14     92   115     23
+assembly      6     13    92     79
+plugins       4      0    55     55
 vscode        3      0    38     38
-tests         9     10    23     13
+tests        11     10    30     20
 docs          1      0    36     36
 other         0      0     0      0
 
