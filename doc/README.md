@@ -1,5 +1,19 @@
 # PJ1 Phase 1：CLI SVG 编辑器
 
+## Phase 2：插件实践与插件式重构
+
+Phase 2 在同一仓库中新增 `src/plugin/` 扩展契约、`plugins/` 示例插件和 `extension/` VSCode 扩展。最终版本通过 `p2` 标签发布，原 `final` 标签保持不变。
+
+扩展点清单：`ShapeProvider` 由 `ShapeFactory.create/fromAttributes` 调用，默认形状仍由同一工厂注册；`CommandPlugin` 由 `CommandDispatcher.execute` 调用，提供 `stats` 与 `dir`；`TreeDecorator` 由渲染器扩展接口承载，提供 `(box)` 与 modified-star 注册；`AttributeHandler` 由 `SetCommand.apply` 查询，box 插件将 `fill` 传播到内部矩形、`label` 写入内部文本。无插件时仍使用 Phase 1 属性白名单和基线命令；重复注册或处理器异常由命令快照回滚。
+
+`PluginLoader` 是装配层，按配置顺序动态 import，不硬编码插件名称。代码装配直接调用 `loader.load`；配置装配读取 `plugins.config.json`，两者共享 `PluginContext`、注册表和插件实例。加载器将模块不存在、无默认导出、激活异常和重复注册转换成 `error:` 并继续启动。`dir` 通过 `DirectoryAccess`/`FileSystemDirectoryAccess` 适配器访问文件系统，因此可用测试替身验证。
+
+VSCode 扩展在 `extension/`：`registerFileDecorationProvider` 只为 `.svg` 返回 `[]` badge；`registerDocumentSymbolProvider` 将 SVG 元素映射到原生 Outline，嵌套子元素成为 children，带 id 显示 `tag#id`，XML 暂时不完整时返回空大纲。安装：在 `extension` 执行 `npm install`、`npm run compile`，再用 VSCode Extension Development Host 打开该目录。测试证据和演示 SVG 位于 `docs/images/` 与 `examples/`；提交时将 VSCode Outline 和 Explorer badge 截图放入 `docs/images/`。
+
+Phase 1 的 XML 编解码、领域图形树和遍历模型仍可复用；VSCode 不直接复用 CLI 的终端 renderer，因为 VSCode Outline 要求 `DocumentSymbolProvider` 和源码范围。文件 badge 使用 VSCode Decoration API，属于 UI 标注，与经典 Decorator 的“包装对象改变接口行为”不同；Outline provider 是 VSCode API 的 adaptor，将 XML 节点适配成 `DocumentSymbol`。
+
+ADR 位于 `doc/adr/001-plugin-contracts.md`、`002-box-degradation.md`、`003-dirty-label.md`。测试覆盖插件注册、缺失模块、激活失败回滚、box/stats 接入；`npm test` 仍包含 Phase 1 回归。
+
 ## 架构方案
 
 ### 目标与模块划分

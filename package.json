@@ -12,7 +12,8 @@
     "cli": "tsx src/main.ts",
     "test": "tsx --test test/*.test.ts",
     "test:coverage": "c8 --include='src/**/*.ts' --reporter=text --reporter=lcov npm test",
-    "check": "npm run build && npm test"
+    "check": "npm run build && npm test",
+    "metrics": "node scripts/metrics.mjs"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.12"
